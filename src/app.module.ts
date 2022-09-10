@@ -11,9 +11,22 @@ import { OrdersModule } from './orders/orders.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UsersModule, MedicinesModule, CustomersModule, SalesModule, StockModule, PurchasesModule, OrdersModule, SuppliersModule, DatabaseModule, AuthModule],
+  imports: [
+    UsersModule,
+    MedicinesModule,
+    CustomersModule,
+    SalesModule,
+    StockModule,
+    PurchasesModule,
+    OrdersModule,
+    SuppliersModule,
+    DatabaseModule,
+    AuthModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
