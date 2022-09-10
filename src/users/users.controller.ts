@@ -24,13 +24,13 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   findAll(@Query('resource') resource: string) {
     if (resource && resource === 'roles') {
       return this.usersService.fetchUsersRoles();
@@ -39,17 +39,20 @@ export class UsersController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }

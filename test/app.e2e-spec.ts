@@ -186,6 +186,21 @@ describe('Pharmacy Version 2 App e2e', function () {
           .expectStatus(403)
           .inspect();
       });
+
+      const updateUser: UpdateUserDto = {
+        role: Role.CHIEF_PHARMACIST,
+      };
+      it('should return the updated user', function () {
+        return pactum
+          .spec()
+          .patch('/users/{id}')
+          .withPathParams('id', '$S{user2Id}')
+          .withHeaders({
+            Authorization: 'Bearer $S{user2AccessToken}',
+          })
+          .withBody({ ...updateUser })
+          .expectStatus(403);
+      });
     });
   });
 });
