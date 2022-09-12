@@ -44,8 +44,9 @@ export class AuthService {
 
   async login(user: AuthDto): Promise<{
     access_token: string;
+    role: Role;
+    userId: string;
     expires_in: string;
-    role: string;
   }> {
     // create a default admin if there is none
     await this.createDefaultAdmin();
@@ -71,6 +72,7 @@ export class AuthService {
 
     return {
       access_token: this.signToken(userFound.id, userFound.username),
+      userId: userFound.id,
       role: userFound.role,
       expires_in: EXPIRES_IN,
     };

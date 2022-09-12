@@ -12,6 +12,7 @@ import { SuppliersModule } from './suppliers/suppliers.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ConfigModule } from '@nestjs/config';
     DatabaseModule,
     AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
