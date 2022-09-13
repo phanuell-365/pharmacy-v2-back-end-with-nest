@@ -1,26 +1,60 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSupplierDto } from './dto/create-supplier.dto';
-import { UpdateSupplierDto } from './dto/update-supplier.dto';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { CreateSupplierDto, UpdateSupplierDto } from './dto';
+import { SUPPLIERS_REPOSITORY } from './constants';
+import { Supplier } from './entities';
 
 @Injectable()
 export class SuppliersService {
-  create(createSupplierDto: CreateSupplierDto) {
-    return 'This action adds a new supplier';
+  constructor(
+    @Inject(SUPPLIERS_REPOSITORY)
+    private readonly suppliersRepository: typeof Supplier,
+  ) {}
+
+  async create(createSupplierDto: CreateSupplierDto) {
+    const supplier = await this.suppliersRepository.findOne({
+      where: {
+        name: createSupplierDto.name,
+      },
+    });
+
+    if (supplier) {
+      throw new ForbiddenException('Supplier already exists');
+    }
+
+    return await this.suppliersRepository.create({ ...createSupplierDto });
   }
 
-  findAll() {
-    return `This action returns all suppliers`;
+  async findAll() {
+    return await this.suppliersRepository.findAll();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} supplier`;
+  async findOne(id: string) {
+    const supplier = await this.suppliersRepository.findByPk(id);
+
+    if (!supplier) {
+      throw new ForbiddenException('Supplier not found');
+    }
+
+    return supplier;
   }
 
-  update(id: number, updateSupplierDto: UpdateSupplierDto) {
-    return `This action updates a #${id} supplier`;
+  async update(id: string, updateSupplierDto: UpdateSupplierDto) {
+    const supplier = await this.suppliersRepository.findByPk(id);
+
+    if (!supplier) {
+      throw new ForbiddenException('Supplier not found');
+    }
+
+    return await supplier.update({ ...updateSupplierDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} supplier`;
+  async remove(id: string) {
+    const supplier = await this.suppliersRepository.findByPk(id);
+
+    if (!supplier) {
+      throw new ForbiddenException('Supplier not found');
+    }
+
+    return await supplier.destroy();
   }
 }

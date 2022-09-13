@@ -1,10 +1,11 @@
-import { DEVELOPMENT, PRODUCTION, SEQUELIZE, TEST } from './constants';
-import { databaseConfig } from './database.config';
-import { Sequelize } from 'sequelize-typescript';
-import { User } from '../users/entities';
-import { InternalServerErrorException } from '@nestjs/common';
-import { Customer } from '../customers/entities';
-import { Medicine } from '../medicines/entities';
+import { DEVELOPMENT, PRODUCTION, SEQUELIZE, TEST } from "./constants";
+import { databaseConfig } from "./database.config";
+import { Sequelize } from "sequelize-typescript";
+import { User } from "../users/entities";
+import { InternalServerErrorException } from "@nestjs/common";
+import { Customer } from "../customers/entities";
+import { Medicine } from "../medicines/entities";
+import { Supplier } from "../suppliers/entities";
 
 export const databaseProvider = [
   {
@@ -27,7 +28,7 @@ export const databaseProvider = [
       }
 
       const sequelize = new Sequelize(config);
-      sequelize.addModels([User, Customer, Medicine]);
+      sequelize.addModels([User, Customer, Medicine, Supplier]);
 
       try {
         switch (process.env.NODE_ENV) {
@@ -45,10 +46,10 @@ export const databaseProvider = [
         }
       } catch (error) {
         console.error(error.message);
-        throw new InternalServerErrorException('Error while syncing database');
+        throw new InternalServerErrorException("Error while syncing database");
       }
 
       return sequelize;
-    },
-  },
+    }
+  }
 ];
