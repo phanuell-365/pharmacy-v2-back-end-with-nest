@@ -2,7 +2,6 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 import { Role } from '../enums';
 
 @Table({
-  tableName: 'Users',
   paranoid: true,
   defaultScope: {
     attributes: {

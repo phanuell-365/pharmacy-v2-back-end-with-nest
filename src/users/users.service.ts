@@ -8,12 +8,12 @@ import {
 import { CreateUserDto, UpdateUserDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities';
-import { USER_REPOSITORY, USERS_ROLES } from './constants';
+import { USERS_REPOSITORY, USERS_ROLES } from './constants';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject(USER_REPOSITORY) private readonly usersRepository: typeof User,
+    @Inject(USERS_REPOSITORY) private readonly usersRepository: typeof User,
   ) {}
 
   async create(createUserDto: CreateUserDto) {

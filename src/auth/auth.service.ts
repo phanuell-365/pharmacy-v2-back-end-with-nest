@@ -1,5 +1,5 @@
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { USER_REPOSITORY } from '../users/constants';
+import { USERS_REPOSITORY } from '../users/constants';
 import { User } from '../users/entities';
 import { Role } from '../users/enums';
 import { CreateUserDto } from '../users/dto';
@@ -11,7 +11,7 @@ import { EXPIRES_IN } from './constants';
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(USER_REPOSITORY) private readonly usersRepository: typeof User,
+    @Inject(USERS_REPOSITORY) private readonly usersRepository: typeof User,
     private readonly jwtService: JwtService,
   ) {}
 
