@@ -39,26 +39,27 @@ export class OrdersController {
   findAll(
     @Query('status') status: string,
     @Query('resource') resource: string,
+    @Query('withId') withId: boolean,
   ) {
     if (status === OrderStatuses.PENDING) {
-      return this.ordersService.findPendingOrders();
+      return this.ordersService.findPendingOrders(withId);
     } else if (status === OrderStatuses.DELIVERED) {
-      return this.ordersService.findDeliveredOrders();
+      return this.ordersService.findDeliveredOrders(withId);
     } else if (status === OrderStatuses.CANCELLED) {
-      return this.ordersService.findCancelledOrders();
+      return this.ordersService.findCancelledOrders(withId);
     } else if (status === OrderStatuses.ACTIVE) {
-      return this.ordersService.findActiveOrders();
+      return this.ordersService.findActiveOrders(withId);
     } else if (resource && resource === 'status') {
       return this.ordersService.findOrderStatus();
     } else {
-      return this.ordersService.findAll();
+      return this.ordersService.findAll(withId);
     }
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
-  findOne(@Param('id') orderId: string) {
-    return this.ordersService.findOne(orderId);
+  findOne(@Query('withId') withId: boolean, @Param('id') orderId: string) {
+    return this.ordersService.findOne(orderId, withId);
   }
 
   @Patch(':id')
@@ -68,12 +69,14 @@ export class OrdersController {
     @Body('MedicineId') medicineId: string,
     @Body('SupplierId') supplierId: string,
     @Body() updateOrderDto: UpdateOrderDto,
+    @Query('withId') withId: boolean,
   ) {
     return this.ordersService.update(
       medicineId,
       supplierId,
       orderId,
       updateOrderDto,
+      withId,
     );
   }
 

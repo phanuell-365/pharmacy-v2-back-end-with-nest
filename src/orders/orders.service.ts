@@ -70,26 +70,61 @@ export class OrdersService {
       );
   }
 
-  async create(
-    medicineId: string,
-    supplierId: string,
-    createOrderDto: CreateOrderDto,
-  ) {
+  async getMedicine(medicineId: string) {
     const medicine = await this.medicineRepository.findByPk(medicineId);
 
     if (!medicine) {
       throw new ForbiddenException('Medicine not found');
     }
 
-    await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
-    await this.checkIfStockPackSizePriceIsValid(medicineId);
-    await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
+    return medicine;
+  }
 
+  async getSupplier(supplierId: string) {
     const supplier = await this.supplierRepository.findByPk(supplierId);
 
     if (!supplier) {
       throw new ForbiddenException('Supplier not found');
     }
+
+    return supplier;
+  }
+
+  // name getters
+  async getMedicineName(medicineId: string) {
+    const medicine = await this.getMedicine(medicineId);
+
+    return medicine.name;
+  }
+
+  async getSupplierName(supplierId: string) {
+    const supplier = await this.getSupplier(supplierId);
+
+    return supplier.name;
+  }
+
+  async returnOrderWithoutIds(order: Order) {
+    return {
+      id: order.id,
+      orderQuantity: order.orderQuantity,
+      status: order.status,
+      medicine: await this.getMedicineName(order.MedicineId),
+      supplier: await this.getSupplierName(order.SupplierId),
+    };
+  }
+
+  async create(
+    medicineId: string,
+    supplierId: string,
+    createOrderDto: CreateOrderDto,
+  ) {
+    await this.getMedicine(medicineId);
+
+    await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
+    await this.checkIfStockPackSizePriceIsValid(medicineId);
+    await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
+
+    await this.getSupplier(supplierId);
 
     return await this.orderRepository.create({
       ...createOrderDto,
@@ -98,66 +133,136 @@ export class OrdersService {
     });
   }
 
-  async findAll() {
-    return await this.orderRepository.findAll({
-      where: {
-        [Op.or]: [
-          { status: OrderStatuses.PENDING },
-          { status: OrderStatuses.ACTIVE },
-          { status: OrderStatuses.DELIVERED },
-        ],
-      },
-    });
+  async findAll(withId: boolean) {
+    if (withId)
+      return await this.orderRepository.findAll({
+        where: {
+          [Op.or]: [
+            { status: OrderStatuses.PENDING },
+            { status: OrderStatuses.ACTIVE },
+            { status: OrderStatuses.DELIVERED },
+          ],
+        },
+      });
+    else {
+      const orders = await this.orderRepository.findAll({
+        where: {
+          [Op.or]: [
+            { status: OrderStatuses.PENDING },
+            { status: OrderStatuses.ACTIVE },
+            { status: OrderStatuses.DELIVERED },
+          ],
+        },
+      });
+
+      return await Promise.all(
+        orders.map(async (value) => await this.returnOrderWithoutIds(value)),
+      );
+    }
   }
 
-  async findOne(orderId: string) {
+  async findOneById(orderId: string) {
     const order = await this.orderRepository.findByPk(orderId);
 
     if (!order) {
       throw new ForbiddenException('Order not found');
     }
+    return order;
+  }
+
+  async findOne(orderId: string, withId: boolean) {
+    const order = await this.findOneById(orderId);
 
     if (order.status === OrderStatuses.CANCELLED) {
       throw new ForbiddenException('Order is cancelled');
     }
 
-    return order;
+    if (withId) return order;
+    else return await this.returnOrderWithoutIds(order);
   }
 
   findOrderStatus() {
     return ORDER_STATUSES;
   }
 
-  async findActiveOrders() {
-    return await this.orderRepository.findAll({
-      where: {
-        status: OrderStatuses.ACTIVE,
-      },
-    });
+  async findActiveOrders(withId: boolean) {
+    if (withId)
+      return await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.ACTIVE,
+        },
+      });
+    else {
+      const orders = await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.ACTIVE,
+        },
+      });
+
+      return await Promise.all(
+        orders.map(async (value) => await this.returnOrderWithoutIds(value)),
+      );
+    }
   }
 
-  async findPendingOrders() {
-    return await this.orderRepository.findAll({
-      where: {
-        status: OrderStatuses.PENDING,
-      },
-    });
+  async findPendingOrders(withId: boolean) {
+    if (withId)
+      return await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.PENDING,
+        },
+      });
+    else {
+      const orders = await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.PENDING,
+        },
+      });
+
+      return await Promise.all(
+        orders.map(async (value) => await this.returnOrderWithoutIds(value)),
+      );
+    }
   }
 
-  async findDeliveredOrders() {
-    return await this.orderRepository.findAll({
-      where: {
-        status: OrderStatuses.DELIVERED,
-      },
-    });
+  async findDeliveredOrders(withId: boolean) {
+    if (withId)
+      return await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.DELIVERED,
+        },
+      });
+    else {
+      const orders = await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.DELIVERED,
+        },
+      });
+
+      return await Promise.all(
+        orders.map(async (value) => await this.returnOrderWithoutIds(value)),
+      );
+    }
   }
 
-  async findCancelledOrders() {
-    return await this.orderRepository.findAll({
-      where: {
-        status: OrderStatuses.CANCELLED,
-      },
-    });
+  async findCancelledOrders(withId: boolean) {
+    if (withId)
+      return await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.CANCELLED,
+        },
+      });
+    else {
+      const orders = await this.orderRepository.findAll({
+        where: {
+          status: OrderStatuses.CANCELLED,
+        },
+      });
+
+      return await Promise.all(
+        orders.map(async (value) => await this.returnOrderWithoutIds(value)),
+      );
+    }
   }
 
   async update(
@@ -165,6 +270,7 @@ export class OrdersService {
     supplierId: string,
     orderId: string,
     updateOrderDto: UpdateOrderDto,
+    withId: boolean,
   ) {
     const medicine = await this.medicineRepository.findByPk(medicineId);
 
@@ -178,13 +284,17 @@ export class OrdersService {
       throw new ForbiddenException('Supplier not found');
     }
 
-    const order = await this.findOne(orderId);
+    const order = await this.findOneById(orderId);
 
-    return await order.update({ ...updateOrderDto });
+    if (withId) return await order.update({ ...updateOrderDto });
+    else
+      return this.returnOrderWithoutIds(
+        await order.update({ ...updateOrderDto }),
+      );
   }
 
   async remove(orderId: string) {
-    const order = await this.findOne(orderId);
+    const order = await this.findOneById(orderId);
 
     if (order.status === OrderStatuses.CANCELLED) {
       throw new ForbiddenException('Order is already cancelled');

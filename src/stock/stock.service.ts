@@ -61,7 +61,7 @@ export class StockService {
     return medicine.name;
   }
 
-  async returnStockWithoutIds(stock: Stock) {
+  async returnStockWithoutIds(stock: Stock): Promise<ReturnStockDto> {
     return {
       id: stock.id,
       packSizePrice: stock.packSizePrice,

@@ -173,7 +173,8 @@ describe('Pharmacy Version 2 Orders App e2e', function () {
             .spec()
             .get('/orders')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-            .expectStatus(200);
+            .expectStatus(200)
+            .inspect();
         });
       });
 
@@ -184,7 +185,8 @@ describe('Pharmacy Version 2 Orders App e2e', function () {
             .get('/orders/{id}')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
             .withPathParams('id', '$S{orderId}')
-            .expectStatus(200);
+            .expectStatus(200)
+            .inspect();
         });
       });
 
