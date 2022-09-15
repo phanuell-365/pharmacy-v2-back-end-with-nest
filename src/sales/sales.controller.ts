@@ -1,42 +1,76 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
-import { CreateSaleDto } from './dto/create-sale.dto';
-import { UpdateSaleDto } from './dto/update-sale.dto';
+import { CreateSaleDto, UpdateSaleDto } from './dto';
+import { SalesStatus } from './enums';
 
 @Controller('sales')
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Post()
-  create(@Body() createSaleDto: CreateSaleDto) {
-    return this.salesService.create(createSaleDto);
+  create(
+    @Body('MedicineId') medicineId: string,
+    @Body('CustomerId') customerId: string,
+    @Body() createSaleDto: CreateSaleDto,
+  ) {
+    return this.salesService.create(medicineId, customerId, createSaleDto);
   }
 
   @Get()
-  findAll() {
-    return this.salesService.findAll();
+  findAll(
+    @Query('resource') resource: string,
+    @Query('status') status: string,
+  ) {
+    if (resource && resource === 'status') {
+      return this.salesService.findSalesStatus();
+    }
+
+    switch (status) {
+      case SalesStatus.ISSUED:
+        return this.salesService.findAllIssuedSales();
+      case SalesStatus.PENDING:
+        return this.salesService.findAllPendingSales();
+      case SalesStatus.CANCELLED:
+        return this.salesService.findAllCancelledSales();
+      default:
+        return this.salesService.findAll();
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.salesService.findOne(+id);
+  findOne(@Param('id') salesId: string) {
+    return this.salesService.findOne(salesId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSaleDto: UpdateSaleDto) {
-    return this.salesService.update(+id, updateSaleDto);
+  update(
+    @Param('id') salesId: string,
+    @Body('MedicineId') medicineId: string,
+    @Body('CustomerId') customerId: string,
+    @Body() updateSaleDto: UpdateSaleDto,
+  ) {
+    return this.salesService.update(
+      medicineId,
+      customerId,
+      salesId,
+      updateSaleDto,
+    );
   }
 
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.salesService.remove(+id);
+  remove(@Param('id') salesId: string) {
+    return this.salesService.remove(salesId);
   }
 }

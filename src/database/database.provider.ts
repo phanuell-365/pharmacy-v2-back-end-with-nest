@@ -9,6 +9,7 @@ import { Supplier } from '../suppliers/entities';
 import { Stock } from '../stock/entities';
 import { Order } from '../orders/entities';
 import { Purchase } from '../purchases/entities';
+import { Sale } from '../sales/entities';
 
 export const databaseProvider = [
   {
@@ -39,6 +40,7 @@ export const databaseProvider = [
         Stock,
         Order,
         Purchase,
+        Sale,
       ]);
 
       try {

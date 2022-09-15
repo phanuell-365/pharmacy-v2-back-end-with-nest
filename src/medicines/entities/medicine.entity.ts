@@ -10,6 +10,7 @@ import { DOSE_FORMS, MEDICINE_STRENGTHS } from '../constants';
 import { DoseForms } from '../enums';
 import { Stock } from '../../stock/entities';
 import { Order } from '../../orders/entities';
+import { Sale } from '../../sales/entities';
 
 @Table({
   paranoid: true,
@@ -85,4 +86,10 @@ export class Medicine extends Model {
     onDelete: 'CASCADE',
   })
   orders: Order[];
+
+  @HasMany(() => Sale, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  sales: Sale[];
 }

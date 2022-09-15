@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
+import { Sale } from '../../sales/entities';
 
 @Table({
   paranoid: true,
@@ -39,9 +40,9 @@ export class Customer extends Model {
   })
   phone: string;
 
-  // @HasMany(() => Sale, {
-  //   onUpdate: 'CASCADE',
-  //   onDelete: 'CASCADE',
-  // })
-  // sales: Sale[];
+  @HasMany(() => Sale, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  sales: Sale[];
 }
