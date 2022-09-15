@@ -1,42 +1,58 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { StockService } from './stock.service';
-import { CreateStockDto } from './dto/create-stock.dto';
-import { UpdateStockDto } from './dto/update-stock.dto';
+import { CreateStockDto, UpdateStockDto } from './dto';
 
 @Controller('stock')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
 
   @Post()
-  create(@Body() createStockDto: CreateStockDto) {
-    return this.stockService.create(createStockDto);
+  create(
+    @Body('MedicineId') medicineId: string,
+    @Body() createStockDto: CreateStockDto,
+  ) {
+    return this.stockService.create(medicineId, createStockDto);
   }
 
   @Get()
-  findAll() {
-    return this.stockService.findAll();
+  findAll(@Query('withId') withId: boolean) {
+    if (!withId) return this.stockService.findAllWithoutIds();
+    return this.stockService.findAllWithIds();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.stockService.findOne(+id);
+  findOne(@Query('withId') withId: boolean, @Param('id') stockId: string) {
+    if (!withId) return this.stockService.findOneWithoutIds(stockId);
+    return this.stockService.findOneWithIds(stockId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStockDto: UpdateStockDto) {
-    return this.stockService.update(+id, updateStockDto);
+  update(
+    @Query('withId') withId: boolean,
+    @Param('id') stockId: string,
+    @Body('MedicineId') medicineId: string,
+    @Body() updateStockDto: UpdateStockDto,
+  ) {
+    if (!withId)
+      return this.stockService.updateWithoutIds(
+        medicineId,
+        stockId,
+        updateStockDto,
+      );
+    return this.stockService.updateWithIds(medicineId, stockId, updateStockDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.stockService.remove(+id);
+  remove(@Param('id') stockId: string) {
+    return this.stockService.remove(stockId);
   }
 }

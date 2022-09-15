@@ -1,6 +1,15 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import {
+  Column,
+  DataType,
+  HasMany,
+  HasOne,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 import { DOSE_FORMS, MEDICINE_STRENGTHS } from '../constants';
 import { DoseForms } from '../enums';
+import { Stock } from '../../stock/entities';
+import { Order } from '../../orders/entities';
 
 @Table({
   paranoid: true,
@@ -65,15 +74,15 @@ export class Medicine extends Model {
   })
   therapeuticClass: string;
 
-  // @HasOne(() => Inventory, {
-  //   onUpdate: 'CASCADE',
-  //   onDelete: 'CASCADE',
-  // })
-  // inventory: Inventory;
-  //
-  // @HasMany(() => Order, {
-  //   onUpdate: 'CASCADE',
-  //   onDelete: 'CASCADE',
-  // })
-  // orders: Order[];
+  @HasOne(() => Stock, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  stock: Stock;
+
+  @HasMany(() => Order, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  orders: Order[];
 }

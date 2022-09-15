@@ -8,26 +8,26 @@ import { MEDICINE_STRENGTHS } from '../constants';
 export class UpdateMedicineDto extends PartialType(CreateMedicineDto) {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  name?: string;
 
   @IsEnum(DoseForms, {
     message: 'Invalid dose form',
   })
   @IsNotEmpty()
-  readonly doseForm: DoseForms;
+  readonly doseForm?: DoseForms;
 
   @IsString()
   @IsValueContaining(MEDICINE_STRENGTHS, {
     message: 'Invalid medicine strength',
   })
   @IsNotEmpty()
-  strength: string;
+  strength?: string;
 
   @IsNotEmpty()
   @IsNumber()
-  levelOfUse: number;
+  levelOfUse?: number;
 
   @IsNotEmpty()
   @IsString()
-  therapeuticClass: string;
+  therapeuticClass?: string;
 }
