@@ -205,7 +205,8 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
           .spec()
           .get('/purchases')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200);
+          .expectStatus(200)
+          .inspect();
       });
     });
 

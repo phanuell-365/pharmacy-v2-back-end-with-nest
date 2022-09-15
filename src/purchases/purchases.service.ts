@@ -7,6 +7,10 @@ import { STOCK_REPOSITORY } from '../stock/constants';
 import { Purchase } from './entities';
 import { CreatePurchaseDto, UpdatePurchaseDto } from './dto';
 import { Stock } from '../stock/entities';
+import { MEDICINES_REPOSITORY } from '../medicines/constants/medicines.repository';
+import { Medicine } from '../medicines/entities';
+import { SUPPLIERS_REPOSITORY } from '../suppliers/constants';
+import { Supplier } from '../suppliers/entities';
 
 @Injectable()
 export class PurchasesService {
@@ -17,6 +21,10 @@ export class PurchasesService {
     private readonly orderRepository: typeof Order,
     @Inject(STOCK_REPOSITORY)
     private readonly stockRepository: typeof Stock,
+    @Inject(MEDICINES_REPOSITORY)
+    private readonly medicinesRepository: typeof Medicine,
+    @Inject(SUPPLIERS_REPOSITORY)
+    private readonly suppliersRepository: typeof Supplier,
   ) {}
 
   // utility functions
@@ -51,6 +59,34 @@ export class PurchasesService {
     }
 
     return stock;
+  }
+
+  async getPurchase(purchaseId: string) {
+    const purchase = await this.purchaseRepository.findByPk(purchaseId);
+
+    if (!purchase) {
+      throw new ForbiddenException('Purchase not found');
+    }
+
+    return purchase;
+  }
+
+  async getMedicine(medicineId: string) {
+    const medicine = await this.medicinesRepository.findByPk(medicineId);
+
+    if (!medicine) {
+      throw new ForbiddenException('Medicine not found');
+    }
+
+    return medicine;
+  }
+
+  async getSupplier(supplierId: string) {
+    const supplier = await this.suppliersRepository.findByPk(supplierId);
+
+    if (!supplier) throw new ForbiddenException('Supplier not found!');
+
+    return supplier;
   }
 
   getNewOrderQuantity(pending: number, supplied: number) {
@@ -147,35 +183,79 @@ export class PurchasesService {
       suppliedQuantity,
     );
 
-    return await this.purchaseRepository.create({
+    const purchase = await this.purchaseRepository.create({
       ...createPurchaseDto,
       totalPackSizePrice:
         createPurchaseDto.pricePerPackSize * createPurchaseDto.packSizeQuantity,
       OrderId: orderId,
     });
+
+    return await this.returnPurchaseWithoutId(purchase);
+  }
+
+  async getSupplierName(supplierId: string) {
+    const supplier = await this.getSupplier(supplierId);
+
+    return supplier.name;
+  }
+
+  async getMedicineName(medicineId: string) {
+    const medicine = await this.getMedicine(medicineId);
+
+    return medicine.name;
+  }
+
+  async returnPurchaseWithoutId(purchase: Purchase) {
+    const order = await this.getOrder(purchase.OrderId);
+
+    return {
+      id: purchase.id,
+      packSizeQuantity: purchase.packSizeQuantity,
+      pricePerPackSize: purchase.pricePerPackSize,
+      totalPackSizePrice: purchase.totalPackSizePrice,
+      OrderId: purchase.OrderId,
+      purchaseDate: purchase['purchaseDate'],
+      medicine: await this.getMedicineName(order.MedicineId),
+      supplier: await this.getSupplierName(order.SupplierId),
+      orderDate: order['orderDate'],
+    };
   }
 
   async findAll() {
-    return await this.purchaseRepository.findAll();
+    const purchases = await this.purchaseRepository.findAll();
+
+    return await Promise.all(
+      purchases.map(async (value) => await this.returnPurchaseWithoutId(value)),
+    );
+  }
+
+  async findOneById(purchaseId: string) {
+    return await this.getPurchase(purchaseId);
   }
 
   async findOne(purchaseId: string) {
-    const purchase = await this.purchaseRepository.findByPk(purchaseId);
+    const purchase = await this.getPurchase(purchaseId);
 
-    if (!purchase) {
-      throw new ForbiddenException('Purchase not found');
-    }
-
-    return purchase;
+    return await this.returnPurchaseWithoutId(purchase);
   }
 
   async update(
     orderId: string,
     purchaseId: string,
     updatePurchaseDto: UpdatePurchaseDto,
-  ): Promise<Purchase> {
+  ): Promise<{
+    packSizeQuantity: number;
+    purchaseDate: any;
+    totalPackSizePrice: number;
+    supplier: string;
+    medicine: string;
+    id: string;
+    OrderId: string;
+    orderDate: any;
+    pricePerPackSize: number;
+  }> {
     // this statement will throw if the purchase does not exist
-    const purchase = await this.findOne(purchaseId);
+    const purchase = await this.findOneById(purchaseId);
 
     const order = await this.getOrder(orderId);
 
@@ -247,8 +327,10 @@ export class PurchasesService {
 
     //calculate the new total pack size price
 
+    let updatedPurchase: Purchase;
+
     if (updatePurchaseDto.packSizeQuantity)
-      return await purchase.update(
+      updatedPurchase = await purchase.update(
         {
           ...updatePurchaseDto,
           totalPackSizePrice:
@@ -257,7 +339,7 @@ export class PurchasesService {
         { where: { id: purchaseId } },
       );
     else if (updatePurchaseDto.pricePerPackSize)
-      return await purchase.update(
+      updatedPurchase = await purchase.update(
         {
           ...updatePurchaseDto,
           totalPackSizePrice:
@@ -265,15 +347,17 @@ export class PurchasesService {
         },
         { where: { id: purchaseId } },
       );
+    else
+      updatedPurchase = await purchase.update(
+        { ...updatePurchaseDto },
+        { where: { id: purchaseId } },
+      );
 
-    return await purchase.update(
-      { ...updatePurchaseDto },
-      { where: { id: purchaseId } },
-    );
+    return await this.returnPurchaseWithoutId(updatedPurchase);
   }
 
   async remove(purchaseId: string) {
-    const purchase = await this.findOne(purchaseId);
+    const purchase = await this.findOneById(purchaseId);
     return await purchase.destroy();
   }
 }

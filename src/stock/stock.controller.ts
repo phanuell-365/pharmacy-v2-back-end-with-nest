@@ -25,14 +25,12 @@ export class StockController {
 
   @Get()
   findAll(@Query('withId') withId: boolean) {
-    if (!withId) return this.stockService.findAllWithoutIds();
-    return this.stockService.findAllWithIds();
+    return this.stockService.findAll(withId);
   }
 
   @Get(':id')
   findOne(@Query('withId') withId: boolean, @Param('id') stockId: string) {
-    if (!withId) return this.stockService.findOneWithoutIds(stockId);
-    return this.stockService.findOneWithIds(stockId);
+    return this.stockService.findOne(stockId, withId);
   }
 
   @Patch(':id')

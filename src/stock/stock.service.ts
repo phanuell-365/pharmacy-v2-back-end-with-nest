@@ -73,34 +73,23 @@ export class StockService {
     };
   }
 
-  /**
-   * @description Returns an array of stock with medicine name
-   * @return Promise<Awaited<ReturnStockDto>[]>
-   */
-  async findAllWithoutIds(): Promise<Awaited<ReturnStockDto>[]> {
-    const stocks = await this.stockRepository.findAll();
+  async findAll(withId: boolean) {
+    if (withId) return await this.stockRepository.findAll();
+    else {
+      const stocks = await this.stockRepository.findAll();
 
-    return await Promise.all(
-      stocks.map(async (value) => await this.returnStockWithoutIds(value)),
-    );
+      return await Promise.all(
+        stocks.map(async (value) => await this.returnStockWithoutIds(value)),
+      );
+    }
   }
 
-  /**
-   * @description Returns an array of stocks with medicine id
-   * @return Promise<Stock[]>
-   */
-  async findAllWithIds(): Promise<Stock[]> {
-    return await this.stockRepository.findAll();
-  }
-
-  async findOneWithIds(id: string) {
-    return await this.getStock(id);
-  }
-
-  async findOneWithoutIds(id: string): Promise<ReturnStockDto> {
-    const stock = await this.getStock(id);
-
-    return await this.returnStockWithoutIds(stock);
+  async findOne(stockId: string, withId: boolean) {
+    if (withId) return this.stockRepository.findByPk(stockId);
+    else
+      return await this.returnStockWithoutIds(
+        await this.stockRepository.findByPk(stockId),
+      );
   }
 
   async update(

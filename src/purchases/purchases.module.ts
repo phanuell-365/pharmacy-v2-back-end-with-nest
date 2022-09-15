@@ -6,15 +6,21 @@ import { StockModule } from '../stock/stock.module';
 import { purchasesRepository } from './purchases.repository';
 import { ordersProvider } from '../orders/orders.provider';
 import { stockProvider } from '../stock/stock.provider';
+import { medicinesProvider } from '../medicines/medicines.provider';
+import { MedicinesModule } from '../medicines/medicines.module';
+import { SuppliersModule } from '../suppliers/suppliers.module';
+import { suppliersProvider } from '../suppliers/suppliers.provider';
 
 @Module({
-  imports: [OrdersModule, StockModule],
+  imports: [OrdersModule, StockModule, MedicinesModule, SuppliersModule],
   controllers: [PurchasesController],
   providers: [
     PurchasesService,
     ...purchasesRepository,
     ...ordersProvider,
     ...stockProvider,
+    ...medicinesProvider,
+    ...suppliersProvider,
   ],
 })
 export class PurchasesModule {}
