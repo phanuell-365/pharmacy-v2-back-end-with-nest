@@ -124,7 +124,7 @@ describe('Pharmacy Version 2 Stock App e2e', function () {
         it('should add stock', function () {
           return pactum
             .spec()
-            .post('/stock')
+            .post('/stocks')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
             .withBody({ ...createStockDto })
             .expectBodyContains(createStockDto.MedicineId)
@@ -137,7 +137,7 @@ describe('Pharmacy Version 2 Stock App e2e', function () {
         it('should return a stock by specified id', function () {
           return pactum
             .spec()
-            .get('/stock/{id}')
+            .get('/stocks/{id}')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
             .withPathParams('id', '$S{stockId}')
             .expectStatus(200);
@@ -148,7 +148,7 @@ describe('Pharmacy Version 2 Stock App e2e', function () {
         it('should return an array of stocks', function () {
           return pactum
             .spec()
-            .get('/stock')
+            .get('/stocks')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
             .expectStatus(200)
             .inspect();
@@ -164,7 +164,7 @@ describe('Pharmacy Version 2 Stock App e2e', function () {
         it('should update a stock', function () {
           return pactum
             .spec()
-            .patch('/stock/{id}?withId=true')
+            .patch('/stocks/{id}?withId=true')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
             .withBody({ ...updateStockDto })
             .withPathParams('id', '$S{stockId}')

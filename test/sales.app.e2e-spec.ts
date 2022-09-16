@@ -129,7 +129,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       it('should add stock', function () {
         return pactum
           .spec()
-          .post('/stock')
+          .post('/stocks')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .withBody({ ...createStockDto })
           .expectBodyContains(createStockDto.MedicineId)
@@ -142,7 +142,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       it('should return an array of stocks', function () {
         return pactum
           .spec()
-          .get('/stock')
+          .get('/stocks')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .expectStatus(200);
       });
@@ -161,7 +161,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       it('should add stock', function () {
         return pactum
           .spec()
-          .post('/stock')
+          .post('/stocks')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .withBody({ ...createStockDto })
           .expectBodyContains(createStockDto.MedicineId)
