@@ -23,25 +23,28 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(
+    Role.ADMIN,
+    Role.CHIEF_PHARMACIST,
+    Role.PHARMACIST_ASSISTANT,
+    Role.PHARMACY_TECHNICIAN,
+  )
   create(@Body() createCustomerDto: CreateCustomerDto) {
     return this.customersService.create(createCustomerDto);
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   findAll() {
     return this.customersService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   findOne(@Param('id') id: string) {
     return this.customersService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   update(
     @Param('id') id: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
