@@ -24,13 +24,12 @@ export class MedicinesController {
   constructor(private readonly medicinesService: MedicinesService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   create(@Body() createMedicineDto: CreateMedicineDto) {
     return this.medicinesService.create(createMedicineDto);
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   findAll(@Query('resource') resource: string) {
     switch (resource) {
       case 'strengths':
@@ -42,13 +41,12 @@ export class MedicinesController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   findOne(@Param('id') id: string) {
     return this.medicinesService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   update(
     @Param('id') id: string,
     @Body() updateMedicineDto: UpdateMedicineDto,

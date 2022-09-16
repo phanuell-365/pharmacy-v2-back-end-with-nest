@@ -52,7 +52,7 @@ describe('Pharmacy Version 2 App e2e', function () {
       email: 'janesmith@localhost.com',
       password: 'password_jane',
       phone: '0712345676',
-      role: Role.PHARMACIST,
+      role: Role.CHIEF_PHARMACIST,
     };
 
     describe('Create', function () {
@@ -132,7 +132,8 @@ describe('Pharmacy Version 2 App e2e', function () {
         email: 'marysmith@localhost.com',
         password: 'password_mary',
         phone: '0712345478',
-        role: Role.PHARMACIST_ASSISTANT,
+        // role: Role.PHARMACIST_ASSISTANT,
+        role: Role.CHIEF_PHARMACIST,
       };
 
       it('should return a new user', function () {
@@ -199,7 +200,21 @@ describe('Pharmacy Version 2 App e2e', function () {
             Authorization: 'Bearer $S{user2AccessToken}',
           })
           .withBody({ ...updateUser })
-          .expectStatus(403);
+          .expectStatus(403)
+          .inspect();
+      });
+    });
+
+    describe('List all users', function () {
+      it('should return an array of users', function () {
+        return pactum
+          .spec()
+          .get('/users')
+          .withHeaders({
+            Authorization: 'Bearer $S{accessToken}',
+          })
+          .expectStatus(200)
+          .inspect();
       });
     });
   });

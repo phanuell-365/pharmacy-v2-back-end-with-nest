@@ -9,6 +9,7 @@ import { CreateUserDto, UpdateUserDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities';
 import { USERS_REPOSITORY, USERS_ROLES } from './constants';
+import { Role } from './enums';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,22 @@ export class UsersService {
     if (user) {
       throw new ConflictException('User already exists!');
     }
+
+    if (createUserDto.role === Role.ADMIN)
+      throw new ForbiddenException(
+        'Error! Failed to create user. You can only have one admin',
+      );
+
+    const chiefPharmacist = await this.usersRepository.findOne({
+      where: {
+        role: Role.CHIEF_PHARMACIST,
+      },
+    });
+
+    if (chiefPharmacist)
+      throw new ForbiddenException(
+        'Error! Failed to create user. You can only have one chief pharmacist',
+      );
 
     const salt = await bcrypt.genSalt(10);
     createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
