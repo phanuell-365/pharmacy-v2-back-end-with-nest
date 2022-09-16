@@ -25,7 +25,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   create(
     @Body('MedicineId') medicineId: string,
     @Body('SupplierId') supplierId: string,
@@ -35,7 +35,7 @@ export class OrdersController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   findAll(
     @Query('status') status: string,
     @Query('resource') resource: string,
@@ -57,7 +57,7 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   findOne(@Query('withId') withId: boolean, @Param('id') orderId: string) {
     return this.ordersService.findOne(orderId, withId);
   }
