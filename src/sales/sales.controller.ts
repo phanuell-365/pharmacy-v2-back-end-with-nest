@@ -13,12 +13,15 @@ import {
 import { SalesService } from './sales.service';
 import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { SalesStatus } from './enums';
+import { Role } from '../users/enums';
+import { Roles } from '../auth/decorator';
 
 @Controller('sales')
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Post()
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
   create(
     // @Body('MedicineId') medicineId: string,
     // @Body('CustomerId') customerId: string,
@@ -32,6 +35,7 @@ export class SalesController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
   findAll(
     @Query('resource') resource: string,
     @Query('status') status: string,
@@ -57,11 +61,13 @@ export class SalesController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
   findOne(@Query('withId') withId: boolean, @Param('id') salesId: string) {
     return this.salesService.findOne(salesId, withId);
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
   update(
     @Param('id') salesId: string,
     @Body('MedicineId') medicineId: string,
@@ -77,6 +83,7 @@ export class SalesController {
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
   @Delete(':id')
   remove(@Param('id') salesId: string) {
     return this.salesService.remove(salesId);
