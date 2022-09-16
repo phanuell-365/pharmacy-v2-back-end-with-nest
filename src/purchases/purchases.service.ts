@@ -11,6 +11,7 @@ import { MEDICINES_REPOSITORY } from '../medicines/constants/medicines.repositor
 import { Medicine } from '../medicines/entities';
 import { SUPPLIERS_REPOSITORY } from '../suppliers/constants';
 import { Supplier } from '../suppliers/entities';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class PurchasesService {
@@ -221,12 +222,33 @@ export class PurchasesService {
     };
   }
 
-  async findAll() {
-    const purchases = await this.purchaseRepository.findAll();
+  async findAll(withId: boolean, today: boolean) {
+    let purchases: Purchase[];
+    if (today) {
+      const TODAY_START = new Date().setHours(0, 0, 0, 0);
+      const NOW = new Date();
 
-    return await Promise.all(
-      purchases.map(async (value) => await this.returnPurchaseWithoutId(value)),
-    );
+      console.warn('TodayStart =>', TODAY_START, 'Now', NOW);
+      purchases = await this.purchaseRepository.findAll({
+        where: {
+          purchaseDate: {
+            [Op.gt]: TODAY_START,
+            [Op.lt]: NOW,
+          },
+        },
+      });
+    } else {
+      purchases = await this.purchaseRepository.findAll();
+    }
+
+    if (!withId)
+      return await Promise.all(
+        purchases.map(
+          async (value) => await this.returnPurchaseWithoutId(value),
+        ),
+      );
+
+    return purchases;
   }
 
   async findOneById(purchaseId: string) {

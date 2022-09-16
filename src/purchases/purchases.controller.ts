@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CreatePurchaseDto, UpdatePurchaseDto } from './dto';
 import { PurchasesService } from './purchases.service';
@@ -29,8 +30,8 @@ export class PurchasesController {
 
   @Get()
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
-  findAll() {
-    return this.purchasesService.findAll();
+  findAll(@Query('withId') withId: boolean, @Query('today') today: boolean) {
+    return this.purchasesService.findAll(withId, today);
   }
 
   @Get(':id')

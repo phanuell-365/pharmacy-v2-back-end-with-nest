@@ -208,6 +208,16 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
           .expectStatus(200)
           .inspect();
       });
+
+      it('should return an array of purchases made today', function () {
+        return pactum
+          .spec()
+          .get('/purchases')
+          .withQueryParams('today', 'true')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .inspect();
+      });
     });
 
     describe('View all orders', function () {
@@ -216,8 +226,7 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
           .spec()
           .get('/orders')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200)
-          .inspect();
+          .expectStatus(200);
       });
     });
 
@@ -255,8 +264,7 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
           .withPathParams('id', '$S{purchaseId}')
           .withBody({ ...updatePurchaseDto })
           .expectBodyContains(updatePurchaseDto.packSizeQuantity)
-          .expectStatus(200)
-          .inspect();
+          .expectStatus(200);
       });
 
       describe('View all stocks', function () {
@@ -265,8 +273,7 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
             .spec()
             .get('/stock')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-            .expectStatus(200)
-            .inspect();
+            .expectStatus(200);
         });
       });
     });
