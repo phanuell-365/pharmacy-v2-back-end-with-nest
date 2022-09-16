@@ -11,7 +11,7 @@ import {
 import { StockService } from './stock.service';
 import { CreateStockDto, UpdateStockDto } from './dto';
 
-@Controller('stock')
+@Controller('stocks')
 export class StockController {
   constructor(private readonly stockService: StockService) {}
 
