@@ -23,19 +23,19 @@ export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   create(@Body() createSupplierDto: CreateSupplierDto) {
     return this.suppliersService.create(createSupplierDto);
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   findAll() {
     return this.suppliersService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
   findOne(@Param('id') id: string) {
     return this.suppliersService.findOne(id);
   }
