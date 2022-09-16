@@ -2,6 +2,7 @@ export const DOSE_FORMS = [
   'Tablet',
   'Tablets',
   'Capsule',
+  'Capsules',
   'PFI',
   'Oral Liquid',
   'Implant',

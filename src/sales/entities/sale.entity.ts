@@ -12,11 +12,11 @@ import { Medicine } from '../../medicines/entities';
 import { Customer } from '../../customers/entities';
 
 @Table({
-  tableName: 'Sales',
+  createdAt: 'saleDate',
   paranoid: true,
   defaultScope: {
     attributes: {
-      exclude: ['createdAt', 'deletedAt', 'updatedAt'],
+      exclude: ['deletedAt', 'updatedAt'],
     },
   },
 })

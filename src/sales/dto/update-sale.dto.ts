@@ -1,25 +1,30 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateSaleDto } from './create-sale.dto';
 import {
-  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
   IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
+  IsUUID,
 } from 'class-validator';
+import { SalesStatus } from '../enums';
 
 export class UpdateSaleDto extends PartialType(CreateSaleDto) {
   @IsOptional()
-  @IsString()
-  name?: string;
+  @IsNumber()
+  issueUnitQuantity?: number;
 
   @IsOptional()
-  @IsEmail()
-  email?: string;
+  @IsEnum(SalesStatus, {
+    message: 'Invalid status',
+  })
+  status?: SalesStatus;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(10)
-  @MinLength(10)
-  phone?: string;
+  @IsNotEmpty()
+  @IsUUID()
+  MedicineId: string;
+
+  @IsNotEmpty()
+  @IsUUID()
+  CustomerId: string;
 }

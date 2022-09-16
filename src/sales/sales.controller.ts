@@ -20,17 +20,24 @@ export class SalesController {
 
   @Post()
   create(
-    @Body('MedicineId') medicineId: string,
-    @Body('CustomerId') customerId: string,
-    @Body() createSaleDto: CreateSaleDto,
+    // @Body('MedicineId') medicineId: string,
+    // @Body('CustomerId') customerId: string,
+    @Body() createSaleDto: CreateSaleDto[],
   ) {
-    return this.salesService.create(medicineId, customerId, createSaleDto);
+    return this.salesService.create(
+      // medicineId,
+      // customerId,
+      createSaleDto,
+    );
   }
 
   @Get()
   findAll(
     @Query('resource') resource: string,
     @Query('status') status: string,
+    @Query('date') saleDate: Date,
+    @Query('customerId') customerId: string,
+    @Query('withId') withId: boolean,
   ) {
     if (resource && resource === 'status') {
       return this.salesService.findSalesStatus();
@@ -38,19 +45,20 @@ export class SalesController {
 
     switch (status) {
       case SalesStatus.ISSUED:
-        return this.salesService.findAllIssuedSales();
+        return this.salesService.findAllIssuedSales(withId);
       case SalesStatus.PENDING:
-        return this.salesService.findAllPendingSales();
+        return this.salesService.findAllPendingSales(withId);
       case SalesStatus.CANCELLED:
-        return this.salesService.findAllCancelledSales();
-      default:
-        return this.salesService.findAll();
+        return this.salesService.findAllCancelledSales(withId);
+      default: {
+        return this.salesService.findAll(saleDate, customerId, withId);
+      }
     }
   }
 
   @Get(':id')
-  findOne(@Param('id') salesId: string) {
-    return this.salesService.findOne(salesId);
+  findOne(@Query('withId') withId: boolean, @Param('id') salesId: string) {
+    return this.salesService.findOne(salesId, withId);
   }
 
   @Patch(':id')

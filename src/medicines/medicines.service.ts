@@ -40,7 +40,7 @@ export class MedicinesService {
     } catch (e) {
       if (e?.name === 'SequelizeUniqueConstraintError')
         throw new BadRequestException(e?.errors.message);
-      console.error(e?.errors);
+      console.error(e);
 
       throw new BadRequestException(e);
     }
