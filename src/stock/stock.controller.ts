@@ -25,8 +25,12 @@ export class StockController {
 
   @Get()
   findAll(@Query('withId') withId: boolean, @Query('cat') cat: string) {
-    if (cat === 'out-of-stock')
-      return this.stockService.findAllMedicinesOutOfStock(withId);
+    switch (cat) {
+      case 'out-of-stock':
+        return this.stockService.findAllMedicinesOutOfStock(withId);
+      case 'expired-stock':
+        return this.stockService.findAllExpiredStock(withId);
+    }
     return this.stockService.findAll(withId);
   }
 

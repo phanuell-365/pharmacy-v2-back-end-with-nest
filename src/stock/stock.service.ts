@@ -92,6 +92,22 @@ export class StockService {
     }
   }
 
+  async findAllExpiredStock(withId: boolean) {
+    const NOW = new Date();
+    const stocks = await this.stockRepository.findAll({
+      where: {
+        expirationDate: {
+          [Op.lt]: NOW,
+        },
+      },
+    });
+
+    if (withId) return stocks;
+    return await Promise.all(
+      stocks.map(async (value) => await this.returnStockWithoutIds(value)),
+    );
+  }
+
   async findAll(withId: boolean) {
     if (withId) return await this.stockRepository.findAll();
     else {
