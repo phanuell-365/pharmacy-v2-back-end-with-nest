@@ -8,6 +8,7 @@ import { CreateStockDto, UpdateStockDto } from './dto';
 import { STOCK_REPOSITORY } from './constants';
 import { Stock } from './entities';
 import { MedicinesService } from '../medicines/medicines.service';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class StockService {
@@ -67,10 +68,28 @@ export class StockService {
       packSizePrice: stock.packSizePrice,
       medicine: await this.getMedicineName(stock.MedicineId),
       packSize: stock.packSize,
+      packSizeQuantity: stock.packSizeQuantity,
       issueUnitPrice: stock.issueUnitPrice,
       issueUnitPerPackSize: stock.issueUnitPerPackSize,
       expirationDate: stock.expirationDate,
     };
+  }
+
+  async findAllMedicinesOutOfStock(withId: boolean) {
+    const stocks = await this.stockRepository.findAll({
+      where: {
+        packSizeQuantity: {
+          [Op.lt]: 2,
+        },
+      },
+    });
+
+    if (withId) return stocks;
+    else {
+      return await Promise.all(
+        stocks.map(async (value) => await this.returnStockWithoutIds(value)),
+      );
+    }
   }
 
   async findAll(withId: boolean) {

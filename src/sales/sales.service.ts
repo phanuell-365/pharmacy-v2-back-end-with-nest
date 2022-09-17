@@ -152,7 +152,7 @@ export class SalesService {
   }
 
   async returnSaleWithoutCustomerId(sale: Sale) {
-    // console.warn('sales', );
+    console.warn('sales', sale['dataValues']);
 
     const data = sale['dataValues'];
     return {
@@ -160,9 +160,7 @@ export class SalesService {
       customer: await this.getCustomerName(data.CustomerId),
       issueUnitQuantity: data.issueUnitQuantity,
       issueUnitPrice: data.issueUnitPrice,
-      totalPrice: data.totalPrice,
-      status: data.status,
-      // medicine: await this.getMedicine(sale.MedicineId),
+      totalPrices: data['totalPrices'],
       medicines: data['medicines'],
       saleDate: data['saleDate'],
     };
@@ -183,7 +181,12 @@ export class SalesService {
     };
   }
 
-  async findAll(saleDate: Date, customerId: string, withId: boolean) {
+  async findAll(
+    saleDate: Date,
+    customerId: string,
+    withId: boolean,
+    today: boolean,
+  ) {
     let sales: Sale[];
 
     if (saleDate) {
@@ -198,7 +201,10 @@ export class SalesService {
         group: ['saleDate'],
         attributes: {
           // exclude: ['MedicineId'],
-          include: [[Sequelize.fn('COUNT', 'saleDate'), 'medicines']],
+          include: [
+            [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
+            [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
+          ],
         },
       });
     } else if (customerId) {
@@ -216,6 +222,30 @@ export class SalesService {
           include: [[Sequelize.fn('COUNT', 'saleDate'), 'medicines']],
         },
       });
+    } else if (today) {
+      const TODAY_START = new Date().setHours(0, 0, 0, 0);
+      const NOW = new Date();
+
+      sales = await this.saleRepository.findAll({
+        where: {
+          [Op.or]: [
+            { status: SalesStatus.ISSUED },
+            { status: SalesStatus.PENDING },
+          ],
+          saleDate: {
+            [Op.gt]: TODAY_START,
+            [Op.lt]: NOW,
+          },
+        },
+        group: ['saleDate'],
+        attributes: {
+          // exclude: ['MedicineId'],
+          include: [
+            [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
+            [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
+          ],
+        },
+      });
     } else {
       sales = await this.saleRepository.findAll({
         where: {
@@ -227,7 +257,10 @@ export class SalesService {
         group: ['saleDate'],
         attributes: {
           // exclude: ['MedicineId'],
-          include: [[Sequelize.fn('COUNT', 'saleDate'), 'medicines']],
+          include: [
+            [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
+            [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
+          ],
         },
       });
     }

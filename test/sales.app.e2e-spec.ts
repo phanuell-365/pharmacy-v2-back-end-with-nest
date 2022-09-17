@@ -331,12 +331,12 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
   describe('Sales', function () {
     describe('Add sales', function () {
       const createSalesDto: CreateSaleDto[] = [
-        // {
-        //   issueUnitQuantity: 24,
-        //   status: SalesStatus.ISSUED,
-        //   MedicineId: '$S{medicineId}',
-        //   CustomerId: '$S{customerId}',
-        // },
+        {
+          issueUnitQuantity: 24,
+          status: SalesStatus.ISSUED,
+          MedicineId: '$S{medicineId}',
+          CustomerId: '$S{customerId}',
+        },
         {
           issueUnitQuantity: 24,
           status: SalesStatus.ISSUED,
@@ -362,6 +362,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .spec()
           .get('/sales')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .inspect()
           .expectStatus(200);
       });
 
@@ -400,6 +401,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .spec()
           .get('/sales')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .inspect()
           .expectStatus(200);
       });
 
@@ -422,6 +424,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withQueryParams('date', '$S{createdSaleDate}')
           .withQueryParams('withId', 'true')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .inspect()
           .expectStatus(200);
       });
     });
@@ -440,8 +443,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withPathParams('id', '$S{saleId}')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .withBody({ ...updateSaleDto })
-          .expectStatus(200)
-          .inspect();
+          .expectStatus(200);
       });
 
       it('should return an array', function () {
@@ -451,8 +453,19 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withQueryParams('date', '$S{createdSaleDate}')
           .withQueryParams('withId', 'true')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200)
-          .inspect();
+          .expectStatus(200);
+      });
+    });
+
+    describe("View Today's sales", function () {
+      it('should return an array of sales', function () {
+        return pactum
+          .spec()
+          .get('/sales')
+          .withQueryParams('today', 'true')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .inspect()
+          .expectStatus(200);
       });
     });
   });

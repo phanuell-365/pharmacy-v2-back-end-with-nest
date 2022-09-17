@@ -228,7 +228,6 @@ export class PurchasesService {
       const TODAY_START = new Date().setHours(0, 0, 0, 0);
       const NOW = new Date();
 
-      console.warn('TodayStart =>', TODAY_START, 'Now', NOW);
       purchases = await this.purchaseRepository.findAll({
         where: {
           purchaseDate: {

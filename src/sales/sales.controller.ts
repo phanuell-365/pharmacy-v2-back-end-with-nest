@@ -42,6 +42,7 @@ export class SalesController {
     @Query('date') saleDate: Date,
     @Query('customerId') customerId: string,
     @Query('withId') withId: boolean,
+    @Query('today') today: boolean,
   ) {
     if (resource && resource === 'status') {
       return this.salesService.findSalesStatus();
@@ -55,7 +56,7 @@ export class SalesController {
       case SalesStatus.CANCELLED:
         return this.salesService.findAllCancelledSales(withId);
       default: {
-        return this.salesService.findAll(saleDate, customerId, withId);
+        return this.salesService.findAll(saleDate, customerId, withId, today);
       }
     }
   }
