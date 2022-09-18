@@ -39,7 +39,9 @@ export class OrdersController {
   findAll(
     @Query('status') status: string,
     @Query('resource') resource: string,
+    @Query('meta') meta: string,
     @Query('withId') withId: boolean,
+    @Query('today') today: boolean,
   ) {
     if (status === OrderStatuses.PENDING) {
       return this.ordersService.findPendingOrders(withId);
@@ -50,9 +52,9 @@ export class OrdersController {
     } else if (status === OrderStatuses.ACTIVE) {
       return this.ordersService.findActiveOrders(withId);
     } else if (resource && resource === 'status') {
-      return this.ordersService.findOrderStatus();
+      return this.ordersService.findOrderStatus(meta);
     } else {
-      return this.ordersService.findAll(withId);
+      return this.ordersService.findAll(withId, today);
     }
   }
 

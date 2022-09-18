@@ -110,6 +110,7 @@ export class OrdersService {
       status: order.status,
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
+      orderDate: order['orderDate'],
     };
   }
 
@@ -133,32 +134,39 @@ export class OrdersService {
     });
   }
 
-  async findAll(withId: boolean) {
-    if (withId)
-      return await this.orderRepository.findAll({
-        where: {
-          [Op.or]: [
-            { status: OrderStatuses.PENDING },
-            { status: OrderStatuses.ACTIVE },
-            { status: OrderStatuses.DELIVERED },
-          ],
-        },
-      });
-    else {
-      const orders = await this.orderRepository.findAll({
-        where: {
-          [Op.or]: [
-            { status: OrderStatuses.PENDING },
-            { status: OrderStatuses.ACTIVE },
-            { status: OrderStatuses.DELIVERED },
-          ],
-        },
-      });
+  async findAll(withId: boolean, today: boolean) {
+    let orders = await this.orderRepository.findAll({
+      where: {
+        [Op.or]: [
+          { status: OrderStatuses.PENDING },
+          { status: OrderStatuses.ACTIVE },
+          { status: OrderStatuses.DELIVERED },
+        ],
+      },
+    });
 
-      return await Promise.all(
-        orders.map(async (value) => await this.returnOrderWithoutIds(value)),
-      );
+    if (withId) return orders;
+    else if (today) {
+      const TODAY_START = new Date().setHours(0, 0, 0, 0);
+      const NOW = new Date();
+      orders = await this.orderRepository.findAll({
+        where: {
+          [Op.or]: [
+            { status: OrderStatuses.PENDING },
+            { status: OrderStatuses.ACTIVE },
+            { status: OrderStatuses.DELIVERED },
+          ],
+          orderDate: {
+            [Op.gt]: TODAY_START,
+            [Op.lt]: NOW,
+          },
+        },
+      });
     }
+
+    return await Promise.all(
+      orders.map(async (value) => await this.returnOrderWithoutIds(value)),
+    );
   }
 
   async findOneById(orderId: string) {
@@ -181,7 +189,9 @@ export class OrdersService {
     else return await this.returnOrderWithoutIds(order);
   }
 
-  findOrderStatus() {
+  findOrderStatus(meta: string) {
+    console.warn(meta);
+    if (meta === 'create') return [OrderStatuses.PENDING, OrderStatuses.ACTIVE];
     return ORDER_STATUSES;
   }
 
