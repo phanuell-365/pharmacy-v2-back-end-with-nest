@@ -1,4 +1,9 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  PreconditionFailedException,
+} from '@nestjs/common';
 import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { Sale } from './entities';
 import { Op } from 'sequelize';
@@ -53,6 +58,14 @@ export class SalesService {
 
     if (!stock) {
       throw new ForbiddenException('Stock not found');
+    }
+
+    const NOW = new Date();
+
+    if (stock.expirationDate <= NOW) {
+      throw new PreconditionFailedException(
+        'Attempt to purchase an expired medicine!',
+      );
     }
 
     return stock;
@@ -152,8 +165,6 @@ export class SalesService {
   }
 
   async returnSaleWithoutCustomerId(sale: Sale) {
-    console.warn('sales', sale['dataValues']);
-
     const data = sale['dataValues'];
     return {
       id: data.id,

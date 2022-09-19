@@ -70,6 +70,18 @@ export class OrdersService {
       );
   }
 
+  async checkIfStockIsExpired(medicineId: string) {
+    const stock = await this.getStock(medicineId);
+
+    const NOW = new Date();
+
+    if (stock.expirationDate <= NOW) {
+      throw new PreconditionFailedException(
+        'Attempting to order an expired medicine!',
+      );
+    }
+  }
+
   async getMedicine(medicineId: string) {
     const medicine = await this.medicineRepository.findByPk(medicineId);
 
@@ -110,7 +122,7 @@ export class OrdersService {
       status: order.status,
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
-      orderDate: order['orderDate'],
+      orderDate: new Date(order['orderDate']).toLocaleString(),
     };
   }
 
@@ -124,6 +136,7 @@ export class OrdersService {
     await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
     await this.checkIfStockPackSizePriceIsValid(medicineId);
     await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
+    await this.checkIfStockIsExpired(medicineId);
 
     await this.getSupplier(supplierId);
 
@@ -293,6 +306,11 @@ export class OrdersService {
     if (!supplier) {
       throw new ForbiddenException('Supplier not found');
     }
+
+    await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
+    await this.checkIfStockPackSizePriceIsValid(medicineId);
+    await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
+    await this.checkIfStockIsExpired(medicineId);
 
     const order = await this.findOneById(orderId);
 

@@ -1,4 +1,9 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  PreconditionFailedException,
+} from '@nestjs/common';
 import { Order } from '../orders/entities';
 import { OrderStatuses } from '../orders/enum';
 import { PURCHASES_REPOSITORY } from './constants';
@@ -57,6 +62,14 @@ export class PurchasesService {
 
     if (!stock) {
       throw new ForbiddenException('Stock not found');
+    }
+
+    const NOW = new Date();
+
+    if (stock.expirationDate <= NOW) {
+      throw new PreconditionFailedException(
+        'Attempt to purchase an expired medicine!',
+      );
     }
 
     return stock;

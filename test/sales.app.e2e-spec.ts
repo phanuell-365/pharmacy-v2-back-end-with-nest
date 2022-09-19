@@ -362,7 +362,6 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .spec()
           .get('/sales')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .inspect()
           .expectStatus(200);
       });
 
@@ -401,7 +400,6 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .spec()
           .get('/sales')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .inspect()
           .expectStatus(200);
       });
 
@@ -424,7 +422,6 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withQueryParams('date', '$S{createdSaleDate}')
           .withQueryParams('withId', 'true')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .inspect()
           .expectStatus(200);
       });
     });
@@ -440,7 +437,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
         return pactum
           .spec()
           .patch('/sales/{id}')
-          .withPathParams('id', '$S{saleId}')
+          .withPathParams('id', '$S{saleId[0]}')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .withBody({ ...updateSaleDto })
           .expectStatus(200);
@@ -464,7 +461,6 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .get('/sales')
           .withQueryParams('today', 'true')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .inspect()
           .expectStatus(200);
       });
     });
