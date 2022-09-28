@@ -29,8 +29,10 @@ export class SalesService {
     private readonly medicineRepository: typeof Medicine,
   ) {}
 
-  async getCustomer(customerId: string) {
-    const customer = await this.customerRepository.findByPk(customerId);
+  async getCustomer(customerId: string, paranoid: boolean) {
+    const customer = await this.customerRepository.findByPk(customerId, {
+      paranoid,
+    });
 
     if (!customer) {
       throw new ForbiddenException('Customer not found');
@@ -39,8 +41,10 @@ export class SalesService {
     return customer;
   }
 
-  async getMedicine(medicineId: string) {
-    const medicine = await this.medicineRepository.findByPk(medicineId);
+  async getMedicine(medicineId: string, paranoid: boolean) {
+    const medicine = await this.medicineRepository.findByPk(medicineId, {
+      paranoid,
+    });
 
     if (!medicine) {
       throw new ForbiddenException('Medicine not found');
@@ -56,6 +60,8 @@ export class SalesService {
       },
     });
 
+    const medicine = await this.getMedicine(medicineId, true);
+
     if (!stock) {
       throw new ForbiddenException('Stock not found');
     }
@@ -64,7 +70,7 @@ export class SalesService {
 
     if (stock.expirationDate <= NOW) {
       throw new PreconditionFailedException(
-        'Attempt to purchase an expired medicine!',
+        `${medicine.name} has already expired!`,
       );
     }
 
@@ -86,14 +92,10 @@ export class SalesService {
   async updateStock(medicineId: string, newStockIssueQuantity: number) {
     const stock = await this.getStock(medicineId);
 
-    // if (stock.issueQuantity < newStockIssueQuantity) {
-    //   throw new ForbiddenException('Stock is insufficient');
-    // } else if (stock.issueQuantity === newStockIssueQuantity) {
-    //   throw new ForbiddenException('Stock is equal to new quantity');
-    // }
+    const medicine = await this.getMedicine(medicineId, true);
 
     if (newStockIssueQuantity < 0) {
-      throw new ForbiddenException('Stock is insufficient');
+      throw new ForbiddenException(`${medicine.name} is out of stock!`);
     } else if (newStockIssueQuantity === 0) {
       throw new ForbiddenException('Stock is equal to new quantity');
     }
@@ -103,14 +105,14 @@ export class SalesService {
     });
   }
 
-  async getMedicineName(medicineId: string) {
-    const medicine = await this.getMedicine(medicineId);
+  async getMedicineName(medicineId: string, paranoid: boolean) {
+    const medicine = await this.getMedicine(medicineId, paranoid);
 
     return medicine.name;
   }
 
-  async getCustomerName(customerId: string) {
-    const customer = await this.getCustomer(customerId);
+  async getCustomerName(customerId: string, paranoid: boolean) {
+    const customer = await this.getCustomer(customerId, paranoid);
 
     return customer.name;
   }
@@ -126,9 +128,9 @@ export class SalesService {
       const customerId = value.CustomerId;
       const medicineId = value.MedicineId;
 
-      await this.getCustomer(customerId);
+      await this.getCustomer(customerId, true);
 
-      await this.getMedicine(medicineId);
+      await this.getMedicine(medicineId, true);
 
       const stock = await this.getStock(medicineId);
 
@@ -168,27 +170,27 @@ export class SalesService {
     const data = sale['dataValues'];
     return {
       id: data.id,
-      customer: await this.getCustomerName(data.CustomerId),
-      issueUnitQuantity: data.issueUnitQuantity,
-      issueUnitPrice: data.issueUnitPrice,
+      customer: await this.getCustomerName(data.CustomerId, true),
+      // issueUnitQuantity: data.issueUnitQuantity,
+      // issueUnitPrice: data.issueUnitPrice,
       totalPrices: data['totalPrices'],
       medicines: data['medicines'],
-      saleDate: data['saleDate'],
+      saleDate: new Date(data['saleDate']).toLocaleString(),
     };
   }
 
-  async returnSaleWithoutIds(sale: Sale) {
+  async returnSaleWithoutIds(sale: Sale, paranoid: boolean) {
     const data = sale['dataValues'];
 
     return {
       id: data.id,
-      medicine: await this.getMedicineName(data.MedicineId),
-      customer: await this.getCustomerName(data.CustomerId),
+      medicine: await this.getMedicineName(data.MedicineId, paranoid),
+      customer: await this.getCustomerName(data.CustomerId, paranoid),
       issueUnitQuantity: data.issueUnitQuantity,
       issueUnitPrice: data.issueUnitPrice,
       totalPrice: data.totalPrice,
       status: data.status,
-      saleDate: data['saleDate'],
+      saleDate: new Date(data['saleDate']).toLocaleString(),
     };
   }
 
@@ -286,7 +288,7 @@ export class SalesService {
   }
 
   async findAllIssuedSales(withId: boolean) {
-    if (!withId)
+    if (withId)
       return await this.saleRepository.findAll({
         where: {
           status: SalesStatus.ISSUED,
@@ -301,7 +303,7 @@ export class SalesService {
 
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutCustomerId(value),
+          async (value) => await this.returnSaleWithoutIds(value, true),
         ),
       );
     }
@@ -323,7 +325,7 @@ export class SalesService {
 
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutCustomerId(value),
+          async (value) => await this.returnSaleWithoutIds(value, true),
         ),
       );
     }
@@ -345,7 +347,7 @@ export class SalesService {
 
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutCustomerId(value),
+          async (value) => await this.returnSaleWithoutIds(value, false),
         ),
       );
     }
@@ -357,7 +359,7 @@ export class SalesService {
 
   async findOne(salesId: string, withId: boolean) {
     if (withId) return await this.getSale(salesId);
-    return await this.returnSaleWithoutIds(await this.getSale(salesId));
+    return await this.returnSaleWithoutIds(await this.getSale(salesId), true);
   }
 
   async update(
@@ -366,9 +368,9 @@ export class SalesService {
     salesId: string,
     updateSaleDto: UpdateSaleDto,
   ) {
-    await this.getCustomer(customerId);
+    await this.getCustomer(customerId, true);
 
-    await this.getMedicine(medicineId);
+    await this.getMedicine(medicineId, true);
 
     const stock = await this.getStock(medicineId);
 
@@ -410,7 +412,7 @@ export class SalesService {
       totalPrice,
     });
 
-    return await this.returnSaleWithoutIds(updatedSale);
+    return await this.returnSaleWithoutIds(updatedSale, true);
   }
 
   async remove(salesId: string) {

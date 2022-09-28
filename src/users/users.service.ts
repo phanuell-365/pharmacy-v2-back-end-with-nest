@@ -39,7 +39,7 @@ export class UsersService {
       },
     });
 
-    if (chiefPharmacist)
+    if (chiefPharmacist && createUserDto.role === Role.CHIEF_PHARMACIST)
       throw new ForbiddenException(
         'Error! Failed to create user. You can only have one chief pharmacist',
       );
