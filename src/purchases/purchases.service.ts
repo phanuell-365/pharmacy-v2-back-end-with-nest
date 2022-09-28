@@ -228,10 +228,10 @@ export class PurchasesService {
       pricePerPackSize: purchase.pricePerPackSize,
       totalPackSizePrice: purchase.totalPackSizePrice,
       OrderId: purchase.OrderId,
-      purchaseDate: purchase['purchaseDate'],
+      purchaseDate: new Date(purchase['purchaseDate']).toLocaleDateString(),
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
-      orderDate: order['orderDate'],
+      orderDate: new Date(order['orderDate']).toLocaleDateString(),
     };
   }
 

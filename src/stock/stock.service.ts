@@ -9,6 +9,7 @@ import { STOCK_REPOSITORY } from './constants';
 import { Stock } from './entities';
 import { MedicinesService } from '../medicines/medicines.service';
 import { Op } from 'sequelize';
+import { Medicine } from '../medicines/entities';
 
 @Injectable()
 export class StockService {
@@ -71,11 +72,12 @@ export class StockService {
       packSizeQuantity: stock.packSizeQuantity,
       issueUnitPrice: stock.issueUnitPrice,
       issueUnitPerPackSize: stock.issueUnitPerPackSize,
-      expirationDate: stock.expirationDate,
+      issueQuantity: stock.issueQuantity,
+      expirationDate: new Date(stock.expirationDate).toLocaleString(),
     };
   }
 
-  async findAllMedicinesOutOfStock(withId: boolean) {
+  async findAllOutOfStock(withId: boolean) {
     const stocks = await this.stockRepository.findAll({
       where: {
         packSizeQuantity: {
@@ -92,6 +94,42 @@ export class StockService {
     }
   }
 
+  async findAllMedicinesStock() {
+    const stocks = await this.stockRepository.findAll();
+
+    const medicinesStock = stocks.map(async (value) => {
+      const medicine: Medicine = await this.getMedicine(value.MedicineId);
+      return {
+        ...medicine['dataValues'],
+        packSizeQuantity: value.packSizeQuantity,
+        issueQuantity: value.issueQuantity,
+      };
+    });
+
+    return await Promise.all(medicinesStock);
+  }
+
+  async findAllMedicinesOutOfStock() {
+    const stocks = await this.stockRepository.findAll({
+      where: {
+        packSizeQuantity: {
+          [Op.lt]: 2,
+        },
+      },
+    });
+
+    const medicinesOutOfStock = stocks.map(async (value) => {
+      const medicine: Medicine = await this.getMedicine(value.MedicineId);
+      return {
+        ...medicine['dataValues'],
+        packSizeQuantity: value.packSizeQuantity,
+        issueQuantity: value.issueQuantity,
+      };
+    });
+
+    return await Promise.all(medicinesOutOfStock);
+  }
+
   async findAllExpiredStock(withId: boolean) {
     const NOW = new Date();
     const stocks = await this.stockRepository.findAll({
@@ -106,6 +144,27 @@ export class StockService {
     return await Promise.all(
       stocks.map(async (value) => await this.returnStockWithoutIds(value)),
     );
+  }
+
+  async findAllExpiredMedicine() {
+    const NOW = new Date();
+    const stocks = await this.stockRepository.findAll({
+      where: {
+        expirationDate: {
+          [Op.lt]: NOW,
+        },
+      },
+    });
+
+    const expiredMedicines = stocks.map(async (value) => {
+      const medicine: Medicine = await this.getMedicine(value.MedicineId);
+      return {
+        ...medicine['dataValues'],
+        expiryDate: new Date(value.expirationDate).toLocaleString(),
+      };
+    });
+
+    return await Promise.all(expiredMedicines);
   }
 
   async findAll(withId: boolean) {

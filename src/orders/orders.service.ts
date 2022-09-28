@@ -122,7 +122,7 @@ export class OrdersService {
       status: order.status,
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
-      orderDate: new Date(order['orderDate']).toLocaleString(),
+      orderDate: new Date(order['orderDate']).toLocaleDateString(),
     };
   }
 

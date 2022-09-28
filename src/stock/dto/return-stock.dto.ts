@@ -6,5 +6,6 @@ interface ReturnStockDto {
   packSizeQuantity: number;
   issueUnitPrice: number;
   issueUnitPerPackSize: number;
-  expirationDate: Date;
+  issueQuantity: number;
+  expirationDate: string;
 }

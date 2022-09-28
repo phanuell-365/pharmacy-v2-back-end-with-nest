@@ -43,7 +43,7 @@ export class CustomersService {
     const customer = await this.customersRepository.findByPk(id);
 
     if (!customer) {
-      throw new ForbiddenException('Customer not found');
+      throw new ForbiddenException('Customer not found!');
     }
 
     return customer;
