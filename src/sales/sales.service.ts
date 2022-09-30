@@ -175,7 +175,7 @@ export class SalesService {
       // issueUnitPrice: data.issueUnitPrice,
       totalPrices: data['totalPrices'],
       medicines: data['medicines'],
-      saleDate: new Date(data['saleDate']).toLocaleString(),
+      saleDate: new Date(data['saleDate']).toLocaleDateString(),
     };
   }
 
@@ -190,7 +190,7 @@ export class SalesService {
       issueUnitPrice: data.issueUnitPrice,
       totalPrice: data.totalPrice,
       status: data.status,
-      saleDate: new Date(data['saleDate']).toLocaleString(),
+      saleDate: new Date(data['saleDate']).toLocaleDateString(),
     };
   }
 

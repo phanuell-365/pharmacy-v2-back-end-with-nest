@@ -73,7 +73,7 @@ export class StockService {
       issueUnitPrice: stock.issueUnitPrice,
       issueUnitPerPackSize: stock.issueUnitPerPackSize,
       issueQuantity: stock.issueQuantity,
-      expirationDate: new Date(stock.expirationDate).toLocaleString(),
+      expirationDate: new Date(stock.expirationDate).toLocaleDateString(),
     };
   }
 
@@ -160,7 +160,7 @@ export class StockService {
       const medicine: Medicine = await this.getMedicine(value.MedicineId);
       return {
         ...medicine['dataValues'],
-        expiryDate: new Date(value.expirationDate).toLocaleString(),
+        expiryDate: new Date(value.expirationDate).toLocaleDateString(),
       };
     });
 

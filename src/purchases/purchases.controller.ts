@@ -30,7 +30,7 @@ export class PurchasesController {
 
   @Get()
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
-  findAll(@Query('withId') withId: boolean, @Query('today') today: boolean) {
+  findAll(@Query('withId') withId: string, @Query('today') today: string) {
     return this.purchasesService.findAll(withId, today);
   }
 

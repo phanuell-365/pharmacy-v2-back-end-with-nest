@@ -46,10 +46,6 @@ export class PurchasesService {
       throw new ForbiddenException('Order was cancelled');
     }
 
-    if (order.status === OrderStatuses.DELIVERED) {
-      throw new ForbiddenException('Order was delivered');
-    }
-
     return order;
   }
 
@@ -168,6 +164,10 @@ export class PurchasesService {
   async create(orderId: string, createPurchaseDto: CreatePurchaseDto) {
     const order = await this.getOrder(orderId);
 
+    if (order.status === OrderStatuses.DELIVERED) {
+      throw new ForbiddenException('Order was delivered');
+    }
+
     const stock = await this.getStock(order.MedicineId);
 
     const pendingOrderQuantity = order.orderQuantity;
@@ -222,22 +222,28 @@ export class PurchasesService {
   async returnPurchaseWithoutId(purchase: Purchase) {
     const order = await this.getOrder(purchase.OrderId);
 
+    const formatter = new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KSH',
+    });
+
     return {
       id: purchase.id,
       packSizeQuantity: purchase.packSizeQuantity,
-      pricePerPackSize: purchase.pricePerPackSize,
-      totalPackSizePrice: purchase.totalPackSizePrice,
+      pricePerPackSize: formatter.format(purchase.pricePerPackSize),
+      totalPackSizePrice: formatter.format(purchase.totalPackSizePrice),
       OrderId: purchase.OrderId,
       purchaseDate: new Date(purchase['purchaseDate']).toLocaleDateString(),
+      orderStatus: (await this.getOrder(purchase.OrderId)).status,
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
       orderDate: new Date(order['orderDate']).toLocaleDateString(),
     };
   }
 
-  async findAll(withId: boolean, today: boolean) {
+  async findAll(withId: string, today: string) {
     let purchases: Purchase[];
-    if (today) {
+    if (today === 'true') {
       const TODAY_START = new Date().setHours(0, 0, 0, 0);
       const NOW = new Date();
 
@@ -253,14 +259,14 @@ export class PurchasesService {
       purchases = await this.purchaseRepository.findAll();
     }
 
-    if (!withId)
+    if (withId === 'true') return purchases;
+    else {
       return await Promise.all(
         purchases.map(
           async (value) => await this.returnPurchaseWithoutId(value),
         ),
       );
-
-    return purchases;
+    }
   }
 
   async findOneById(purchaseId: string) {
@@ -277,21 +283,15 @@ export class PurchasesService {
     orderId: string,
     purchaseId: string,
     updatePurchaseDto: UpdatePurchaseDto,
-  ): Promise<{
-    packSizeQuantity: number;
-    purchaseDate: any;
-    totalPackSizePrice: number;
-    supplier: string;
-    medicine: string;
-    id: string;
-    OrderId: string;
-    orderDate: any;
-    pricePerPackSize: number;
-  }> {
+  ) {
     // this statement will throw if the purchase does not exist
     const purchase = await this.findOneById(purchaseId);
 
     const order = await this.getOrder(orderId);
+
+    if (order.status === OrderStatuses.DELIVERED) {
+      throw new ForbiddenException('Order was delivered');
+    }
 
     const stock = await this.getStock(order.MedicineId);
 

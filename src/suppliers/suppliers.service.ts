@@ -32,7 +32,7 @@ export class SuppliersService {
     const supplier = await this.suppliersRepository.findByPk(id);
 
     if (!supplier) {
-      throw new ForbiddenException('Supplier not found');
+      throw new ForbiddenException('Supplier not found!');
     }
 
     return supplier;
@@ -42,7 +42,7 @@ export class SuppliersService {
     const supplier = await this.suppliersRepository.findByPk(id);
 
     if (!supplier) {
-      throw new ForbiddenException('Supplier not found');
+      throw new ForbiddenException('Supplier not found!');
     }
 
     return await supplier.update({ ...updateSupplierDto });
@@ -52,7 +52,7 @@ export class SuppliersService {
     const supplier = await this.suppliersRepository.findByPk(id);
 
     if (!supplier) {
-      throw new ForbiddenException('Supplier not found');
+      throw new ForbiddenException('Supplier not found!');
     }
 
     return await supplier.destroy();
