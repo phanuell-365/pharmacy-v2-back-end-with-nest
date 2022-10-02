@@ -9,6 +9,7 @@ import { CreateMedicineDto, UpdateMedicineDto } from './dto';
 import { MEDICINES_REPOSITORY } from './constants/medicines.repository';
 import { Medicine } from './entities';
 import { DOSE_FORMS, MEDICINE_STRENGTHS } from './constants';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class MedicinesService {
@@ -92,6 +93,27 @@ export class MedicinesService {
     }
 
     return medicine;
+  }
+
+  async findAllMedicineOutOfStock() {
+    return await this.medicinesRepository.findAll({
+      where: {
+        packSizeQuantity: {
+          [Op.lt]: 2,
+        },
+      },
+    });
+  }
+
+  async findAllExpiredMedicines() {
+    const NOW = new Date();
+    return await this.medicinesRepository.findAll({
+      where: {
+        expiryDate: {
+          [Op.lt]: NOW,
+        },
+      },
+    });
   }
 
   findMedicineStrengths() {
