@@ -47,7 +47,7 @@ export class SalesService {
     });
 
     if (!medicine) {
-      throw new ForbiddenException('Medicine not found');
+      throw new ForbiddenException('Medicine not found!');
     }
 
     return medicine;

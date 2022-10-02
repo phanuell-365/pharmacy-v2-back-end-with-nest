@@ -46,8 +46,42 @@ export class MedicinesService {
     }
   }
 
+  async findAllWithoutStockInfo(): Promise<Medicine[]> {
+    return await this.medicinesRepository.findAll({
+      attributes: [
+        'id',
+        'name',
+        'doseForm',
+        'strength',
+        'levelOfUse',
+        'therapeuticClass',
+        'packSize',
+      ],
+    });
+  }
+
   async findAll(): Promise<Medicine[]> {
     return await this.medicinesRepository.findAll();
+  }
+
+  async findOneWithoutStockInfo(id: string) {
+    const medicine = await this.medicinesRepository.findByPk(id, {
+      attributes: [
+        'id',
+        'name',
+        'doseForm',
+        'strength',
+        'levelOfUse',
+        'therapeuticClass',
+        'packSize',
+      ],
+    });
+
+    if (!medicine) {
+      throw new ForbiddenException('Medicine not found!');
+    }
+
+    return medicine;
   }
 
   async findOne(id: string): Promise<Medicine> {
@@ -75,7 +109,7 @@ export class MedicinesService {
     const medicine = await this.medicinesRepository.findByPk(id);
 
     if (!medicine) {
-      throw new ForbiddenException('Medicine not found');
+      throw new ForbiddenException('Medicine not found!');
     }
 
     let existingMedicine: Medicine;
@@ -143,7 +177,7 @@ export class MedicinesService {
     const medicine = await this.medicinesRepository.findByPk(id);
 
     if (!medicine) {
-      throw new ForbiddenException('Medicine not found');
+      throw new ForbiddenException('Medicine not found!');
     }
 
     return await medicine.destroy();

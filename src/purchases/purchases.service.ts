@@ -85,7 +85,7 @@ export class PurchasesService {
     const medicine = await this.medicinesRepository.findByPk(medicineId);
 
     if (!medicine) {
-      throw new ForbiddenException('Medicine not found');
+      throw new ForbiddenException('Medicine not found!');
     }
 
     return medicine;

@@ -32,7 +32,7 @@ export class StockService {
     const medicine = await this.medicineService.findOne(medicineId);
 
     if (!medicine) {
-      throw new ForbiddenException('Medicine not found');
+      throw new ForbiddenException('Medicine not found!');
     }
 
     return medicine;

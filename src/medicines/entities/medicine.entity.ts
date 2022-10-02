@@ -103,7 +103,7 @@ export class Medicine extends Model {
     allowNull: false,
     defaultValue: 0,
   })
-  issueQuantity: number;
+  issueUnitQuantity: number;
 
   @Column({
     type: DataType.NUMBER,
