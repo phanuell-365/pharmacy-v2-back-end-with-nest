@@ -62,7 +62,7 @@ export class PurchasesService {
 
     const NOW = new Date();
 
-    if (stock.expirationDate <= NOW) {
+    if (stock.expiryDate <= NOW) {
       throw new PreconditionFailedException(
         'Attempt to purchase an expired medicine!',
       );

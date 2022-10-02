@@ -27,23 +27,39 @@ export class Stock extends Model {
   id: string;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.NUMBER,
     allowNull: false,
+    defaultValue: 0,
   })
-  issueUnitPrice: number;
+  issueUnitPurchasePrice: number;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.NUMBER,
     allowNull: false,
+    defaultValue: 0,
   })
-  issueUnitPerPackSize: number;
+  issueUnitSellingPrice: number;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerIssueUnit: number;
+
+  @Column({
+    type: DataType.NUMBER,
     allowNull: false,
     defaultValue: 0,
   })
   issueQuantity: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  issueUnitPerPackSize: number;
 
   @Column({
     type: DataType.STRING,
@@ -52,13 +68,28 @@ export class Stock extends Model {
   packSize: string;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.NUMBER,
     allowNull: false,
+    defaultValue: 0,
   })
-  packSizePrice: number;
+  packSizePurchasePrice: number;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  packSizeSellingPrice: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerPackSize: number;
+
+  @Column({
+    type: DataType.NUMBER,
     allowNull: false,
     defaultValue: 0,
   })
@@ -68,7 +99,7 @@ export class Stock extends Model {
     type: DataType.DATE,
     allowNull: false,
   })
-  expirationDate: Date;
+  expiryDate: Date;
 
   @ForeignKey(() => Medicine)
   @Column({ allowNull: false, type: DataType.UUID })

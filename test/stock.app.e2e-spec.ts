@@ -117,7 +117,7 @@ describe('Pharmacy Version 2 Stock App e2e', function () {
           issueUnitPerPackSize: 30,
           packSize: 'Bottle',
           packSizePrice: 700,
-          expirationDate: new Date('2023/04/02'),
+          expiryDate: new Date('2023/04/02'),
           MedicineId: '$S{medicineId}',
         };
 

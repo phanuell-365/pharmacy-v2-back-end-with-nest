@@ -121,7 +121,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       issueUnitPerPackSize: 400,
       packSize: 'Bottle',
       packSizePrice: 200,
-      expirationDate: new Date('2025/04/02'),
+      expiryDate: new Date('2025/04/02'),
       MedicineId: '$S{medicineId}',
     };
 
@@ -154,7 +154,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
         issueUnitPerPackSize: 100,
         packSize: 'Box',
         packSizePrice: 500,
-        expirationDate: new Date('2024/01/31'),
+        expiryDate: new Date('2024/01/31'),
         MedicineId: '$S{medicine2Id}',
       };
 

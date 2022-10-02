@@ -73,7 +73,7 @@ export class StockService {
       issueUnitPrice: stock.issueUnitPrice,
       issueUnitPerPackSize: stock.issueUnitPerPackSize,
       issueQuantity: stock.issueQuantity,
-      expirationDate: new Date(stock.expirationDate).toLocaleDateString(),
+      expiryDate: new Date(stock.expiryDate).toLocaleDateString(),
     };
   }
 
@@ -134,7 +134,7 @@ export class StockService {
     const NOW = new Date();
     const stocks = await this.stockRepository.findAll({
       where: {
-        expirationDate: {
+        expiryDate: {
           [Op.lt]: NOW,
         },
       },
@@ -150,7 +150,7 @@ export class StockService {
     const NOW = new Date();
     const stocks = await this.stockRepository.findAll({
       where: {
-        expirationDate: {
+        expiryDate: {
           [Op.lt]: NOW,
         },
       },
@@ -160,7 +160,7 @@ export class StockService {
       const medicine: Medicine = await this.getMedicine(value.MedicineId);
       return {
         ...medicine['dataValues'],
-        expiryDate: new Date(value.expirationDate).toLocaleDateString(),
+        expiryDate: new Date(value.expiryDate).toLocaleDateString(),
       };
     });
 

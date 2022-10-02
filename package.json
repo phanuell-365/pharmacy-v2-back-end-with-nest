@@ -1,7 +1,7 @@
 {
   "name": "pharmacy-v2",
   "version": "1.1.0",
-  "description": "<p align=\"center\">   <a href=\"http://nestjs.com/\" target=\"blank\"><img src=\"https://nestjs.com/img/logo-small.svg\" width=\"200\" alt=\"Nest Logo\" /></a> </p>",
+  "description": "<p align=\\\"center\\\">   <a href=\\\"https://nestjs.com/\\\" target=\\\"blank\\\"><img src=\\\"https://nestjs.com/img/logo-small.svg\\\" width=\\\"200\\\" alt=\\\"Nest Logo\\\" /></a> </p>",
   "author": "Phanuel Kidakwa",
   "private": true,
   "license": "MIT",

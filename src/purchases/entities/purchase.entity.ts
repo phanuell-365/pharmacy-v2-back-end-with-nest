@@ -31,7 +31,7 @@ export class Purchase extends Model {
     type: DataType.INTEGER,
     allowNull: false,
   })
-  packSizeQuantity: number;
+  purchasedPackSizeQuantity: number;
 
   @Column({
     type: DataType.INTEGER,
@@ -40,10 +40,22 @@ export class Purchase extends Model {
   pricePerPackSize: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
   })
-  totalPackSizePrice: number;
+  issueUnitPerPackSize: number;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  expiryDate: Date;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  totalPurchasePrice: number;
 
   @ForeignKey(() => Order)
   @Column({ allowNull: false, type: DataType.UUID })

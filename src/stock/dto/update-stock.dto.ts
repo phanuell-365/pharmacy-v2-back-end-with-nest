@@ -32,7 +32,7 @@ export class UpdateStockDto extends PartialType(CreateStockDto) {
   @Transform(({ value }) => new Date(value))
   @IsDate()
   @MinDate(new Date())
-  expirationDate?: Date;
+  expiryDate?: Date;
 
   @IsNotEmpty()
   @IsUUID()

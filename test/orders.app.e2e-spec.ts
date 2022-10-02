@@ -89,7 +89,7 @@ describe('Pharmacy Version 2 Orders App e2e', function () {
             issueUnitPerPackSize: 40,
             packSize: 'Box',
             packSizePrice: 750,
-            expirationDate: new Date('2023/04/02'),
+            expiryDate: new Date('2023/04/02'),
             MedicineId: '$S{medicineId}',
           };
 

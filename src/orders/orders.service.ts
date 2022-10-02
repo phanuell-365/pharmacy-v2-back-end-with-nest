@@ -75,7 +75,7 @@ export class OrdersService {
 
     const NOW = new Date();
 
-    if (stock.expirationDate <= NOW) {
+    if (stock.expiryDate <= NOW) {
       throw new PreconditionFailedException(
         'Attempting to order an expired medicine!',
       );

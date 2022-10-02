@@ -1,33 +1,37 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateMedicineDto } from './create-medicine.dto';
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { DoseForms } from '../enums';
 import { IsValueContaining } from '../validations';
 import { MEDICINE_STRENGTHS } from '../constants';
 
 export class UpdateMedicineDto extends PartialType(CreateMedicineDto) {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   name?: string;
 
   @IsEnum(DoseForms, {
     message: 'Invalid dose form',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly doseForm?: DoseForms;
 
   @IsString()
   @IsValueContaining(MEDICINE_STRENGTHS, {
     message: 'Invalid medicine strength',
   })
-  @IsNotEmpty()
+  @IsOptional()
   strength?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   levelOfUse?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   therapeuticClass?: string;
+
+  @IsOptional()
+  @IsString()
+  packSize?: string;
 }

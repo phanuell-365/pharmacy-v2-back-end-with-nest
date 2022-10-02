@@ -28,4 +28,8 @@ export class CreateMedicineDto {
   @IsNotEmpty()
   @IsString()
   therapeuticClass: string;
+
+  @IsNotEmpty()
+  @IsString()
+  packSize: string;
 }

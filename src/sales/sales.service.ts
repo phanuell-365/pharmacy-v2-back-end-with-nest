@@ -68,7 +68,7 @@ export class SalesService {
 
     const NOW = new Date();
 
-    if (stock.expirationDate <= NOW) {
+    if (stock.expiryDate <= NOW) {
       throw new PreconditionFailedException(
         `${medicine.name} has already expired!`,
       );

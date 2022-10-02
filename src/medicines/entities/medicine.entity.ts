@@ -1,14 +1,6 @@
-import {
-  Column,
-  DataType,
-  HasMany,
-  HasOne,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
 import { DOSE_FORMS, MEDICINE_STRENGTHS } from '../constants';
 import { DoseForms } from '../enums';
-import { Stock } from '../../stock/entities';
 import { Order } from '../../orders/entities';
 import { Sale } from '../../sales/entities';
 
@@ -29,6 +21,8 @@ export class Medicine extends Model {
     unique: true,
   })
   id: string;
+
+  // provided during a medicine creation
 
   @Column({
     type: DataType.STRING,
@@ -75,11 +69,82 @@ export class Medicine extends Model {
   })
   therapeuticClass: string;
 
-  @HasOne(() => Stock, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
   })
-  stock: Stock;
+  packSize: string;
+
+  // provided during a purchase
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  issueUnitPurchasePrice: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  issueUnitSellingPrice: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerIssueUnit: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  issueQuantity: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  issueUnitPerPackSize: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  packSizePurchasePrice: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  packSizeSellingPrice: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerPackSize: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  packSizeQuantity: number;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  expiryDate: Date;
 
   @HasMany(() => Order, {
     onUpdate: 'CASCADE',
