@@ -9,12 +9,13 @@ import { ORDER_STATUSES, ORDERS_REPOSITORY } from './constants';
 import { Order } from './entities';
 import { MEDICINES_REPOSITORY } from '../medicines/constants/medicines.repository';
 import { Op } from 'sequelize';
-import { STOCK_REPOSITORY } from '../stock/constants';
+// import { STOCK_REPOSITORY } from '../stock/constants';
 import { OrderStatuses } from './enum';
 import { Supplier } from '../suppliers/entities';
 import { SUPPLIERS_REPOSITORY } from '../suppliers/constants';
 import { Medicine } from '../medicines/entities';
-import { Stock } from '../stock/entities';
+
+// import { Stock } from '../stock/entities';
 
 @Injectable()
 export class OrdersService {
@@ -24,58 +25,61 @@ export class OrdersService {
     @Inject(SUPPLIERS_REPOSITORY)
     private readonly supplierRepository: typeof Supplier,
     @Inject(ORDERS_REPOSITORY)
-    private readonly orderRepository: typeof Order,
-    @Inject(STOCK_REPOSITORY)
-    private readonly stockRepository: typeof Stock,
+    private readonly orderRepository: typeof Order, // @Inject(STOCK_REPOSITORY) // private readonly stockRepository: typeof Stock,
   ) {}
 
-  async getStock(medicineId: string) {
-    const stock = await this.stockRepository.findOne({
-      where: {
-        MedicineId: medicineId,
-      },
-    });
+  //
+  //
+  // async getStock(medicineId: string) {
+  //   const stock = await this.stockRepository.findOne({
+  //     where: {
+  //       MedicineId: medicineId,
+  //     },
+  //   });
+  //
+  //   if (!stock) {
+  //     throw new ForbiddenException('Stock not found');
+  //   }
+  //
+  //   return stock;
+  // }
 
-    if (!stock) {
-      throw new ForbiddenException('Stock not found');
-    }
-
-    return stock;
-  }
-
-  async checkIfStockIssueQuantityPriceIsValid(medicineId: string) {
-    const stock = await this.getStock(medicineId);
-
-    if (stock.issueUnitPrice < 0)
-      throw new PreconditionFailedException(
-        "The medicine's issue unit price is invalid!",
-      );
-  }
+  // async checkIfStockIssueQuantityPriceIsValid(medicineId: string) {
+  //   const stock = await this.getStock(medicineId);
+  //
+  //   if (stock.issueUnitPrice < 0)
+  //     throw new PreconditionFailedException(
+  //       "The medicine's issue unit price is invalid!",
+  //     );
+  // }
 
   async checkIfStockIssueUnitPackSizeIsValid(medicineId: string) {
-    const stock = await this.getStock(medicineId);
+    // const stock = await this.getStock(medicineId);
+    const medicine = await this.getMedicine(medicineId);
 
-    if (stock.issueUnitPerPackSize < 0)
+    if (medicine.issueUnitPerPackSize < 0)
       throw new PreconditionFailedException(
         "The medicine's issue unit per pack size is invalid!",
       );
   }
 
   async checkIfStockPackSizePriceIsValid(medicineId: string) {
-    const stock = await this.getStock(medicineId);
+    // const stock = await this.getStock(medicineId);
 
-    if (stock.packSizePrice < 0)
+    const medicine = await this.getMedicine(medicineId);
+
+    if (medicine.packSizeSellingPrice < 0)
       throw new PreconditionFailedException(
-        "The medicine's pack size price invalid!",
+        "The medicine's pack size selling is price invalid!",
       );
   }
 
   async checkIfStockIsExpired(medicineId: string) {
-    const stock = await this.getStock(medicineId);
-
+    // const stock = await this.getStock(medicineId);
+    const medicine = await this.getMedicine(medicineId);
     const NOW = new Date();
 
-    if (stock.expiryDate <= NOW) {
+    if (medicine.expiryDate <= NOW) {
       throw new PreconditionFailedException(
         'Attempting to order an expired medicine!',
       );
@@ -133,9 +137,9 @@ export class OrdersService {
   ) {
     await this.getMedicine(medicineId);
 
-    await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
-    await this.checkIfStockPackSizePriceIsValid(medicineId);
-    await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
+    // await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
+    // await this.checkIfStockPackSizePriceIsValid(medicineId);
+    // await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
     await this.checkIfStockIsExpired(medicineId);
 
     await this.getSupplier(supplierId);
@@ -307,9 +311,9 @@ export class OrdersService {
       throw new ForbiddenException('Supplier not found');
     }
 
-    await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
-    await this.checkIfStockPackSizePriceIsValid(medicineId);
-    await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
+    // await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
+    // await this.checkIfStockPackSizePriceIsValid(medicineId);
+    // await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
     await this.checkIfStockIsExpired(medicineId);
 
     const order = await this.findOneById(orderId);

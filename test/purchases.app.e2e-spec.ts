@@ -4,7 +4,6 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as pactum from 'pactum';
 import { AuthDto } from '../src/auth/dto';
 import { DoseForms } from '../src/medicines/enums';
-import { CreateStockDto } from '../src/stock/dto';
 import { CreateMedicineDto } from '../src/medicines/dto';
 import { CreateSupplierDto } from '../src/suppliers/dto';
 import { CreateOrderDto } from '../src/orders/dto';
@@ -58,6 +57,7 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
       strength: '500mg',
       levelOfUse: 3,
       therapeuticClass: 'Pain Killers',
+      packSize: 'Box',
     };
 
     describe('Add Medicine', function () {
@@ -86,39 +86,39 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
     });
   });
 
-  describe('Stock', function () {
-    describe('Add stock', function () {
-      const createStockDto: CreateStockDto = {
-        issueUnitPrice: 500,
-        issueUnitPerPackSize: 100,
-        packSize: 'Box',
-        packSizePrice: 15,
-        expiryDate: new Date('2023/04/02'),
-        MedicineId: '$S{medicineId}',
-      };
-
-      it('should add stock', function () {
-        return pactum
-          .spec()
-          .post('/stock')
-          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .withBody({ ...createStockDto })
-          .expectBodyContains(createStockDto.MedicineId)
-          .expectStatus(201)
-          .stores('stockId', 'id');
-      });
-    });
-
-    describe('View Stocks', function () {
-      it('should return an array of stocks', function () {
-        return pactum
-          .spec()
-          .get('/stock')
-          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200);
-      });
-    });
-  });
+  // describe('Stock', function () {
+  //   describe('Add stock', function () {
+  //     const createStockDto: CreateStockDto = {
+  //       issueUnitPrice: 500,
+  //       issueUnitPerPackSize: 100,
+  //       packSize: 'Box',
+  //       packSizePrice: 15,
+  //       expiryDate: new Date('2023/04/02'),
+  //       MedicineId: '$S{medicineId}',
+  //     };
+  //
+  //     it('should add stock', function () {
+  //       return pactum
+  //         .spec()
+  //         .post('/stock')
+  //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+  //         .withBody({ ...createStockDto })
+  //         .expectBodyContains(createStockDto.MedicineId)
+  //         .expectStatus(201)
+  //         .stores('stockId', 'id');
+  //     });
+  //   });
+  //
+  //   describe('View Stocks', function () {
+  //     it('should return an array of stocks', function () {
+  //       return pactum
+  //         .spec()
+  //         .get('/stock')
+  //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+  //         .expectStatus(200);
+  //     });
+  //   });
+  // });
 
   describe('Supplier', function () {
     describe('Add supplier', function () {
@@ -184,8 +184,10 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
   describe('Purchases', function () {
     describe('Add purchase', function () {
       const purchasesDto: CreatePurchaseDto = {
-        packSizeQuantity: 60,
-        pricePerPackSize: 12,
+        purchasedPackSizeQuantity: 60,
+        pricePerPackSize: 5000,
+        issueUnitPerPackSize: 200,
+        expiryDate: new Date('2023/04/02'),
         OrderId: '$S{orderId}',
       };
       it('should deliver an order', function () {
@@ -240,20 +242,30 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
       });
     });
 
-    describe('View all stocks', function () {
-      it('should return an array of stocks', function () {
+    describe('View Medicines', function () {
+      it('should return an array of medicines', function () {
         return pactum
           .spec()
-          .get('/stock')
+          .get('/medicines')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200);
+          .expectStatus(200)
+          .inspect();
       });
     });
+    // describe('View all stocks', function () {
+    //   it('should return an array of stocks', function () {
+    //     return pactum
+    //       .spec()
+    //       .get('/stock')
+    //       .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+    //       .expectStatus(200);
+    //   });
+    // });
 
     describe('Update Purchase', function () {
       const updatePurchaseDto: UpdatePurchaseDto = {
         OrderId: '$S{orderId}',
-        packSizeQuantity: 20,
+        purchasedPackSizeQuantity: 20,
       };
 
       it('should update the purchase', function () {
@@ -263,17 +275,88 @@ describe('Pharmacy Version 2 Purchases App e2e', function () {
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .withPathParams('id', '$S{purchaseId}')
           .withBody({ ...updatePurchaseDto })
-          .expectBodyContains(updatePurchaseDto.packSizeQuantity)
+          .expectBodyContains(updatePurchaseDto.purchasedPackSizeQuantity)
           .expectStatus(200);
       });
 
-      describe('View all stocks', function () {
-        it('should return an array of stocks', function () {
+      it('should update the price per pack size', function () {
+        return (
+          pactum
+            .spec()
+            .patch('/purchases/{id}')
+            .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+            .withPathParams('id', '$S{purchaseId}')
+            .withBody({
+              pricePerPackSize: 4000,
+              OrderId: '$S{orderId}',
+              purchasedPackSizeQuantity: 20,
+              issueUnitPerPackSize: 200,
+              expiryDate: new Date('2023/04/02'),
+            })
+            // .expectBodyContains(4000)
+            .expectStatus(200)
+            .inspect()
+        );
+      });
+
+      it('should update the issue unit per pack size', function () {
+        return (
+          pactum
+            .spec()
+            .patch('/purchases/{id}')
+            .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+            .withPathParams('id', '$S{purchaseId}')
+            .withBody({
+              issueUnitPerPackSize: 100,
+              OrderId: '$S{orderId}',
+              pricePerPackSize: 4000,
+              expiryDate: new Date('2023/04/02'),
+              purchasedPackSizeQuantity: 20,
+            })
+            // .expectBodyContains(4000)
+            .expectStatus(200)
+            .inspect()
+        );
+      });
+
+      describe('View Medicines', function () {
+        it('should return an array of medicines', function () {
           return pactum
             .spec()
-            .get('/stock')
+            .get('/medicines')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-            .expectStatus(200);
+            .expectStatus(200)
+            .inspect();
+        });
+      });
+
+      describe('Add order', function () {
+        const createOrderDto: CreateOrderDto = {
+          orderQuantity: 150,
+          status: OrderStatuses.PENDING,
+          MedicineId: '$S{medicineId}',
+          SupplierId: '$S{supplierId}',
+        };
+
+        it('should place an order', function () {
+          return pactum
+            .spec()
+            .post('/orders')
+            .withBody({ ...createOrderDto })
+            .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+            .expectStatus(201)
+            .stores('orderId2', 'id');
+        });
+      });
+
+      describe('View all orders', function () {
+        it('should return an array of orders', function () {
+          return pactum
+            .spec()
+            .get('/orders')
+            .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+            .expectStatus(200)
+            .inspect();
         });
       });
     });

@@ -78,63 +78,63 @@ export class Medicine extends Model {
   // provided during a purchase
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitPurchasePrice: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitSellingPrice: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   profitPerIssueUnit: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitQuantity: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitPerPackSize: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   packSizePurchasePrice: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   packSizeSellingPrice: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
   profitPerPackSize: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.DECIMAL,
     allowNull: false,
     defaultValue: 0,
   })
@@ -143,6 +143,8 @@ export class Medicine extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    // set tomorrow's date as the default expiry date
+    defaultValue: new Date(new Date().setDate(new Date().getDate() + 1)),
   })
   expiryDate: Date;
 

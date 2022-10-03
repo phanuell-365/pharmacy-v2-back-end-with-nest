@@ -4,8 +4,8 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { MedicinesModule } from './medicines/medicines.module';
 import { CustomersModule } from './customers/customers.module';
-import { SalesModule } from './sales/sales.module';
-import { StockModule } from './stock/stock.module';
+// import { SalesModule } from './sales/sales.module';
+// import { StockModule } from './stock/stock.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { OrdersModule } from './orders/orders.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
@@ -19,8 +19,8 @@ import { ReportsModule } from './reports/reports.module';
     UsersModule,
     MedicinesModule,
     CustomersModule,
-    SalesModule,
-    StockModule,
+    // SalesModule,
+    // StockModule,
     PurchasesModule,
     OrdersModule,
     SuppliersModule,

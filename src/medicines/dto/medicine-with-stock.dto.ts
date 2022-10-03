@@ -14,6 +14,6 @@ export interface MedicineWithStockDto {
   packSizePurchasePrice: number;
   packSizeSellingPrice: number;
   profitPerPackSize: number;
-  packSizeQuantity: number;
+  purchasedPackSizeQuantity: number;
   expiryDate: Date;
 }

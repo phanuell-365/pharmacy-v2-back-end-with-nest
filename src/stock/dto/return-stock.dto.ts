@@ -3,7 +3,7 @@ interface ReturnStockDto {
   packSizePrice: number;
   medicine: string;
   packSize: string;
-  packSizeQuantity: number;
+  purchasedPackSizeQuantity: number;
   issueUnitPrice: number;
   issueUnitPerPackSize: number;
   issueQuantity: number;

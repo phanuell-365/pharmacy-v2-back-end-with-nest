@@ -1,12 +1,4 @@
-import {
-  BelongsTo,
-  Column,
-  DataType,
-  ForeignKey,
-  Model,
-  Table,
-} from 'sequelize-typescript';
-import { Medicine } from '../../medicines/entities';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({
   paranoid: true,
@@ -100,11 +92,11 @@ export class Stock extends Model {
     allowNull: false,
   })
   expiryDate: Date;
-
-  @ForeignKey(() => Medicine)
-  @Column({ allowNull: false, type: DataType.UUID })
-  MedicineId: string;
-
-  @BelongsTo(() => Medicine)
-  medicine: Medicine;
+  //
+  // @ForeignKey(() => Medicine)
+  // @Column({ allowNull: false, type: DataType.UUID })
+  // MedicineId: string;
+  //
+  // @BelongsTo(() => Medicine)
+  // medicine: Medicine;
 }

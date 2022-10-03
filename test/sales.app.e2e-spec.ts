@@ -5,7 +5,6 @@ import * as pactum from 'pactum';
 import { AuthDto } from '../src/auth/dto';
 import { DoseForms } from '../src/medicines/enums';
 import { CreateMedicineDto } from '../src/medicines/dto';
-import { CreateStockDto } from '../src/stock/dto';
 import { CreateSupplierDto } from '../src/suppliers/dto';
 import { CreateOrderDto } from '../src/orders/dto';
 import { OrderStatuses } from '../src/orders/enum';
@@ -61,6 +60,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       strength: '500mg',
       levelOfUse: 4,
       therapeuticClass: 'Pain Killers',
+      packSize: 'Box',
     };
 
     describe('Add Medicine', function () {
@@ -95,6 +95,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
         strength: '200mg',
         levelOfUse: 3,
         therapeuticClass: 'Pain Killers',
+        packSize: 'Box',
       };
       // medicineDto.name = 'Action';
       // medicineDto.levelOfUse = 3;
@@ -115,61 +116,61 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
     });
   });
 
-  describe('Stock', function () {
-    const createStockDto: CreateStockDto = {
-      issueUnitPrice: 300,
-      issueUnitPerPackSize: 400,
-      packSize: 'Bottle',
-      packSizePrice: 200,
-      expiryDate: new Date('2025/04/02'),
-      MedicineId: '$S{medicineId}',
-    };
-
-    describe('Add stock', function () {
-      it('should add stock', function () {
-        return pactum
-          .spec()
-          .post('/stocks')
-          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .withBody({ ...createStockDto })
-          .expectBodyContains(createStockDto.MedicineId)
-          .expectStatus(201)
-          .stores('stockId', 'id');
-      });
-    });
-
-    describe('View Stocks', function () {
-      it('should return an array of stocks', function () {
-        return pactum
-          .spec()
-          .get('/stocks')
-          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200);
-      });
-    });
-
-    describe('Add another stock', function () {
-      const createStockDto: CreateStockDto = {
-        issueUnitPrice: 5,
-        issueUnitPerPackSize: 100,
-        packSize: 'Box',
-        packSizePrice: 500,
-        expiryDate: new Date('2024/01/31'),
-        MedicineId: '$S{medicine2Id}',
-      };
-
-      it('should add stock', function () {
-        return pactum
-          .spec()
-          .post('/stocks')
-          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .withBody({ ...createStockDto })
-          .expectBodyContains(createStockDto.MedicineId)
-          .expectStatus(201)
-          .stores('stockId', 'id');
-      });
-    });
-  });
+  // describe('Stock', function () {
+  //   const createStockDto: CreateStockDto = {
+  //     issueUnitPrice: 300,
+  //     issueUnitPerPackSize: 400,
+  //     packSize: 'Bottle',
+  //     packSizePrice: 200,
+  //     expiryDate: new Date('2025/04/02'),
+  //     MedicineId: '$S{medicineId}',
+  //   };
+  //
+  //   describe('Add stock', function () {
+  //     it('should add stock', function () {
+  //       return pactum
+  //         .spec()
+  //         .post('/stocks')
+  //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+  //         .withBody({ ...createStockDto })
+  //         .expectBodyContains(createStockDto.MedicineId)
+  //         .expectStatus(201)
+  //         .stores('stockId', 'id');
+  //     });
+  //   });
+  //
+  //   describe('View Stocks', function () {
+  //     it('should return an array of stocks', function () {
+  //       return pactum
+  //         .spec()
+  //         .get('/stocks')
+  //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+  //         .expectStatus(200);
+  //     });
+  //   });
+  //
+  //   describe('Add another stock', function () {
+  //     const createStockDto: CreateStockDto = {
+  //       issueUnitPrice: 5,
+  //       issueUnitPerPackSize: 100,
+  //       packSize: 'Box',
+  //       packSizePrice: 500,
+  //       expiryDate: new Date('2024/01/31'),
+  //       MedicineId: '$S{medicine2Id}',
+  //     };
+  //
+  //     it('should add stock', function () {
+  //       return pactum
+  //         .spec()
+  //         .post('/stocks')
+  //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+  //         .withBody({ ...createStockDto })
+  //         .expectBodyContains(createStockDto.MedicineId)
+  //         .expectStatus(201)
+  //         .stores('stockId', 'id');
+  //     });
+  //   });
+  // });
 
   describe('Supplier', function () {
     describe('Add supplier', function () {
@@ -254,8 +255,10 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
   describe('Purchases', function () {
     describe('Add purchase', function () {
       const purchasesDto: CreatePurchaseDto = {
-        packSizeQuantity: 50,
+        purchasedPackSizeQuantity: 50,
+        issueUnitPerPackSize: 100,
         pricePerPackSize: 1200,
+        expiryDate: new Date('2025/04/02'),
         OrderId: '$S{orderId}',
       };
       it('should add purchase', function () {
@@ -281,8 +284,10 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
 
     describe('Add another purchase', function () {
       const purchasesDto: CreatePurchaseDto = {
-        packSizeQuantity: 50,
+        purchasedPackSizeQuantity: 50,
         pricePerPackSize: 1200,
+        issueUnitPerPackSize: 100,
+        expiryDate: new Date('2025/04/02'),
         OrderId: '$S{order2Id}',
       };
 

@@ -13,7 +13,7 @@ import { Transform } from 'class-transformer';
 export class UpdatePurchaseDto extends PartialType(CreatePurchaseDto) {
   @IsOptional()
   @IsNumber()
-  packSizeQuantity?: number;
+  purchasedPackSizeQuantity?: number;
 
   @IsOptional()
   @IsNumber()

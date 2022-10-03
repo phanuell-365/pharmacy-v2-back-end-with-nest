@@ -47,7 +47,7 @@ export class PurchasesController {
     @Body('OrderId') orderId: string,
     @Body() updatePurchaseDto: UpdatePurchaseDto,
   ) {
-    return this.purchasesService.update(orderId, purchaseId, updatePurchaseDto);
+    return this.purchasesService.update(purchaseId, orderId, updatePurchaseDto);
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -52,10 +52,46 @@ export class Purchase extends Model {
   expiryDate: Date;
 
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.DECIMAL,
     allowNull: false,
+    defaultValue: 0,
   })
   totalPurchasePrice: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  totalIssueUnitQuantity: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitMarginPercentagePerPackSize: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerPackSize: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitMarginPercentagePerIssueUnit: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerIssueUnit: number;
 
   @ForeignKey(() => Order)
   @Column({ allowNull: false, type: DataType.UUID })

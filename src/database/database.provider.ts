@@ -6,7 +6,6 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { Customer } from '../customers/entities';
 import { Medicine } from '../medicines/entities';
 import { Supplier } from '../suppliers/entities';
-import { Stock } from '../stock/entities';
 import { Order } from '../orders/entities';
 import { Purchase } from '../purchases/entities';
 import { Sale } from '../sales/entities';
@@ -37,7 +36,7 @@ export const databaseProvider = [
         Customer,
         Medicine,
         Supplier,
-        Stock,
+        // Stock,
         Order,
         Purchase,
         Sale,

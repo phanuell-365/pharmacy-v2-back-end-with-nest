@@ -5,7 +5,6 @@ import * as pactum from 'pactum';
 import { AuthDto } from '../src/auth/dto';
 import { DoseForms } from '../src/medicines/enums';
 import { CreateMedicineDto } from '../src/medicines/dto';
-import { CreateStockDto } from '../src/stock/dto';
 import { CreateOrderDto, UpdateOrderDto } from '../src/orders/dto';
 import { OrderStatuses } from '../src/orders/enum';
 import { CreateSupplierDto } from '../src/suppliers/dto';
@@ -56,6 +55,7 @@ describe('Pharmacy Version 2 Orders App e2e', function () {
         strength: '250mg',
         levelOfUse: 3,
         therapeuticClass: 'Pain Killers',
+        packSize: 'Box',
       };
 
       describe('Add Medicine', function () {
@@ -82,39 +82,39 @@ describe('Pharmacy Version 2 Orders App e2e', function () {
         });
       });
 
-      describe('Stock', function () {
-        describe('Add stock', function () {
-          const createStockDto: CreateStockDto = {
-            issueUnitPrice: 250,
-            issueUnitPerPackSize: 40,
-            packSize: 'Box',
-            packSizePrice: 750,
-            expiryDate: new Date('2023/04/02'),
-            MedicineId: '$S{medicineId}',
-          };
-
-          it('should add stock', function () {
-            return pactum
-              .spec()
-              .post('/stocks')
-              .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-              .withBody({ ...createStockDto })
-              .expectBodyContains(createStockDto.MedicineId)
-              .expectStatus(201)
-              .stores('stockId', 'id');
-          });
-        });
-
-        describe('View Stocks', function () {
-          it('should return an array of stocks', function () {
-            return pactum
-              .spec()
-              .get('/stocks')
-              .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-              .expectStatus(200);
-          });
-        });
-      });
+      // describe('Stock', function () {
+      //   describe('Add stock', function () {
+      //     const createStockDto: CreateStockDto = {
+      //       issueUnitPrice: 250,
+      //       issueUnitPerPackSize: 40,
+      //       packSize: 'Box',
+      //       packSizePrice: 750,
+      //       expiryDate: new Date('2023/04/02'),
+      //       MedicineId: '$S{medicineId}',
+      //     };
+      //
+      //     it('should add stock', function () {
+      //       return pactum
+      //         .spec()
+      //         .post('/stocks')
+      //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+      //         .withBody({ ...createStockDto })
+      //         .expectBodyContains(createStockDto.MedicineId)
+      //         .expectStatus(201)
+      //         .stores('stockId', 'id');
+      //     });
+      //   });
+      //
+      //   describe('View Stocks', function () {
+      //     it('should return an array of stocks', function () {
+      //       return pactum
+      //         .spec()
+      //         .get('/stocks')
+      //         .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+      //         .expectStatus(200);
+      //     });
+      //   });
+      // });
     });
 
     describe('Supplier', function () {
@@ -209,16 +209,16 @@ describe('Pharmacy Version 2 Orders App e2e', function () {
         });
       });
 
-      describe('Cancel an order', function () {
-        it('should mark the order by the id specified cancelled', function () {
-          return pactum
-            .spec()
-            .delete('/orders/{id}')
-            .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-            .withPathParams('id', '$S{orderId}')
-            .expectStatus(204);
-        });
-      });
+      // describe('Cancel an order', function () {
+      //   it('should mark the order by the id specified cancelled', function () {
+      //     return pactum
+      //       .spec()
+      //       .delete('/orders/{id}')
+      //       .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+      //       .withPathParams('id', '$S{orderId}')
+      //       .expectStatus(204);
+      //   });
+      // });
 
       describe('View cancelled orders', function () {
         it('should return an array of cancelled orders', function () {

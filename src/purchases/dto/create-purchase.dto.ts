@@ -4,7 +4,7 @@ import { Transform } from 'class-transformer';
 export class CreatePurchaseDto {
   @IsNotEmpty()
   @IsNumber()
-  purchasePackSizeQuantity: number;
+  purchasedPackSizeQuantity: number;
 
   @IsNotEmpty()
   @IsNumber()
