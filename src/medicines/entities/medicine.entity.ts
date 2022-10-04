@@ -99,7 +99,7 @@ export class Medicine extends Model {
   profitPerIssueUnit: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })

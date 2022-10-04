@@ -1,4 +1,9 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  PreconditionFailedException,
+} from '@nestjs/common';
 import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { Sale } from './entities';
 import { Op } from 'sequelize';
@@ -46,30 +51,23 @@ export class SalesService {
     return medicine;
   }
 
-  //
-  // async getStock(medicineId: string) {
-  //   const stock = await this.stockRepository.findOne({
-  //     where: {
-  //       MedicineId: medicineId,
-  //     },
-  //   });
-  //
-  //   const medicine = await this.getMedicine(medicineId, true);
-  //
-  //   if (!stock) {
-  //     throw new ForbiddenException('Stock not found');
-  //   }
-  //
-  //   const NOW = new Date();
-  //
-  //   if (stock.expiryDate <= NOW) {
-  //     throw new PreconditionFailedException(
-  //       `${medicine.name} has already expired!`,
-  //     );
-  //   }
-  //
-  //   return stock;
-  // }
+  async checkMedicineStock(medicineId: string) {
+    const medicine = await this.getMedicine(medicineId, true);
+
+    if (medicine.packSizeQuantity < 2) {
+      throw new ForbiddenException('The medicine stock not found!');
+    }
+
+    const NOW = new Date();
+
+    if (medicine.expiryDate <= NOW) {
+      throw new PreconditionFailedException(
+        `${medicine.name} has already expired!`,
+      );
+    }
+
+    return medicine;
+  }
 
   async getSale(salesId: string) {
     const sale = await this.saleRepository.findByPk(salesId);
@@ -84,21 +82,22 @@ export class SalesService {
   }
 
   //
-  // async updateStock(medicineId: string, newStockIssueQuantity: number) {
-  //   const stock = await this.getStock(medicineId);
-  //
-  //   const medicine = await this.getMedicine(medicineId, true);
-  //
-  //   if (newStockIssueQuantity < 0) {
-  //     throw new ForbiddenException(`${medicine.name} is out of stock!`);
-  //   } else if (newStockIssueQuantity === 0) {
-  //     throw new ForbiddenException('Stock is equal to new quantity');
-  //   }
-  //
-  //   return await stock.update({
-  //     issueQuantity: newStockIssueQuantity,
-  //   });
-  // }
+  async updateMedicineStock(
+    medicineId: string,
+    newMedicineStockIssueQuantity: number,
+  ) {
+    const medicine = await this.getMedicine(medicineId, true);
+
+    if (newMedicineStockIssueQuantity < 0) {
+      throw new ForbiddenException(`${medicine.name} is out of stock!`);
+    } else if (newMedicineStockIssueQuantity === 0) {
+      throw new ForbiddenException('Stock is equal to new quantity');
+    }
+
+    return await medicine.update({
+      issueUnitQuantity: newMedicineStockIssueQuantity,
+    });
+  }
 
   async getMedicineName(medicineId: string, paranoid: boolean) {
     const medicine = await this.getMedicine(medicineId, paranoid);
@@ -110,6 +109,24 @@ export class SalesService {
     const customer = await this.getCustomer(customerId, paranoid);
 
     return customer.name;
+  }
+
+  // calculate and update the medicine's pack size
+  async updateMedicinePackSize(
+    medicineId: string,
+    newMedicinePackSize: number,
+  ) {
+    const medicine = await this.getMedicine(medicineId, true);
+
+    if (newMedicinePackSize < 0) {
+      throw new ForbiddenException(`${medicine.name} is out of stock!`);
+    } else if (newMedicinePackSize === 0) {
+      throw new ForbiddenException('Stock is equal to new quantity');
+    }
+
+    return await medicine.update({
+      packSizeQuantity: newMedicinePackSize,
+    });
   }
 
   async create(
@@ -125,40 +142,56 @@ export class SalesService {
 
       await this.getCustomer(customerId, true);
 
-      await this.getMedicine(medicineId, true);
-      //
-      // const stock = await this.getStock(medicineId);
-      //
-      // // update stock
-      // const newStockIssueQuantity =
-      //   stock.issueQuantity - value.issueUnitQuantity;
-      //
-      // await this.updateStock(medicineId, newStockIssueQuantity);
-      //
-      // // get the medicine price
-      // const medicinePrice = stock.issueUnitPrice;
-      //
-      // // calculate the total price
-      // const totalPrice = medicinePrice * value.issueUnitQuantity;
-      //
-      // return {
-      //   ...value,
-      //   issueUnitPrice: medicinePrice,
-      //   totalPrice,
-      //   status: SalesStatus.ISSUED,
-      // };
+      const medicine = await this.getMedicine(medicineId, true);
+
+      await this.checkMedicineStock(medicineId);
+
+      // update stock
+      const newMedicineIssueQuantity =
+        medicine.issueUnitQuantity - value.issueUnitQuantity;
+      await this.updateMedicineStock(medicineId, newMedicineIssueQuantity);
+
+      // get the medicine price
+      const medicinePrice = medicine.issueUnitSellingPrice;
+
+      // calculate the total price
+      const totalPrice = medicinePrice * value.issueUnitQuantity;
+
+      // calculate the medicine pack size using the issue unit per pack size and the issue unit quantity
+      const theMedicineIssueUnitQuantity = medicine.issueUnitQuantity;
+
+      const theMedicineIssueUnitPerPackSize = medicine.issueUnitPerPackSize;
+
+      const newMedicinePackSizeQuantity = Math.floor(
+        theMedicineIssueUnitQuantity / theMedicineIssueUnitPerPackSize,
+      );
+      // await this.updateMedicinePackSize(
+      //   medicineId,
+      //   newMedicinePackSizeQuantity,
+      // );
+
+      await medicine.update({
+        packSizeQuantity: newMedicinePackSizeQuantity,
+      });
+
+      return {
+        ...value,
+        issueUnitPrice: medicinePrice,
+        totalPrice,
+        status: SalesStatus.ISSUED,
+      };
     });
 
     // create the sales
-    // const createdSales = await this.saleRepository.bulkCreate(
-    //   await Promise.all(sales),
-    // );
-    //
-    // return await Promise.all(
-    //   createdSales.map(
-    //     async (value) => await this.returnSaleWithoutCustomerId(value),
-    //   ),
-    // );
+    const createdSales = await this.saleRepository.bulkCreate(
+      await Promise.all(sales),
+    );
+
+    return await Promise.all(
+      createdSales.map(
+        async (value) => await this.returnSaleWithoutCustomerId(value),
+      ),
+    );
   }
 
   async returnSaleWithoutCustomerId(sale: Sale) {
@@ -363,61 +396,60 @@ export class SalesService {
     salesId: string,
     updateSaleDto: UpdateSaleDto,
   ) {
-    // await this.getCustomer(customerId, true);
-    //
-    // await this.getMedicine(medicineId, true);
-    //
-    // const stock = await this.getStock(medicineId);
-    //
-    // const sale = await this.getSale(salesId);
-    //
-    // // update stock
-    // const newStockIssueQuantity =
-    //   stock.issueQuantity +
-    //   sale.issueUnitQuantity -
-    //   updateSaleDto.issueUnitQuantity;
-    //
-    // await this.updateStock(medicineId, newStockIssueQuantity);
-    //
-    // // get the medicine price
-    // const medicinePrice = stock.issueUnitPrice;
-    //
-    // // calculate the total price
-    // const totalPrice = medicinePrice * updateSaleDto.issueUnitQuantity;
-    //
-    // // check if the sales status was changed
-    // if (
-    //   updateSaleDto.status &&
-    //   updateSaleDto.status === SalesStatus.CANCELLED
-    // ) {
-    //   const previouslySoldQuantity = sale.issueUnitQuantity;
-    //   const currentStock = stock.issueQuantity;
-    //
-    //   const initialStockIssueQuantity = previouslySoldQuantity + currentStock;
-    //
-    //   await stock.update({
-    //     issueQuantity: initialStockIssueQuantity,
-    //   });
-    // }
-    //
-    // // update the sale
-    // const updatedSale = await sale.update({
-    //   ...updateSaleDto,
-    //   issueUnitPrice: medicinePrice,
-    //   totalPrice,
-    // });
-    //
-    // return await this.returnSaleWithoutIds(updatedSale, true);
+    await this.getCustomer(customerId, true);
+
+    const medicine = await this.getMedicine(medicineId, true);
+
+    const sale = await this.getSale(salesId);
+
+    // update stock
+    const newStockIssueQuantity =
+      medicine.issueUnitQuantity +
+      sale.issueUnitQuantity -
+      updateSaleDto.issueUnitQuantity;
+
+    await this.updateMedicineStock(medicineId, newStockIssueQuantity);
+
+    // get the medicine price
+    const medicinePrice = medicine.issueUnitSellingPrice;
+
+    // calculate the total price
+    const totalPrice = medicinePrice * updateSaleDto.issueUnitQuantity;
+
+    // check if the sales status was changed
+    if (
+      updateSaleDto.status &&
+      updateSaleDto.status === SalesStatus.CANCELLED
+    ) {
+      const previouslySoldQuantity = sale.issueUnitQuantity;
+      const currentStock = medicine.issueUnitQuantity;
+
+      const initialStockIssueQuantity = previouslySoldQuantity + currentStock;
+
+      await medicine.update({
+        issueUnitQuantity: initialStockIssueQuantity,
+      });
+    }
+
+    // update the sale
+    const updatedSale = await sale.update({
+      ...updateSaleDto,
+      issueUnitPrice: medicinePrice,
+      totalPrice,
+    });
+
+    return await this.returnSaleWithoutIds(updatedSale, true);
   }
 
   async remove(salesId: string) {
     const sale = await this.getSale(salesId);
 
-    // const stock = await this.getStock(sale.MedicineId);
-    //
-    // const newStockIssueQuantity = stock.issueQuantity + sale.issueUnitQuantity;
-    //
-    // await this.updateStock(sale.MedicineId, newStockIssueQuantity);
+    const medicine = await this.getMedicine(sale.MedicineId, true);
+
+    const newStockIssueQuantity =
+      medicine.issueUnitQuantity + sale.issueUnitQuantity;
+
+    await this.updateMedicineStock(sale.MedicineId, newStockIssueQuantity);
 
     // change the sales status to cancelled
     return await sale.update({

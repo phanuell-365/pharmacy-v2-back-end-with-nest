@@ -255,9 +255,9 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
   describe('Purchases', function () {
     describe('Add purchase', function () {
       const purchasesDto: CreatePurchaseDto = {
-        purchasedPackSizeQuantity: 50,
-        issueUnitPerPackSize: 100,
-        pricePerPackSize: 1200,
+        purchasedPackSizeQuantity: 70,
+        issueUnitPerPackSize: 200,
+        pricePerPackSize: 1500,
         expiryDate: new Date('2025/04/02'),
         OrderId: '$S{orderId}',
       };
@@ -282,11 +282,22 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       });
     });
 
+    describe('View Medicines', function () {
+      it('should return an array of medicines', function () {
+        return pactum
+          .spec()
+          .get('/medicines')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .inspect();
+      });
+    });
+
     describe('Add another purchase', function () {
       const purchasesDto: CreatePurchaseDto = {
-        purchasedPackSizeQuantity: 50,
-        pricePerPackSize: 1200,
-        issueUnitPerPackSize: 100,
+        purchasedPackSizeQuantity: 70,
+        pricePerPackSize: 1500,
+        issueUnitPerPackSize: 200,
         expiryDate: new Date('2025/04/02'),
         OrderId: '$S{order2Id}',
       };
@@ -299,6 +310,15 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withBody({ ...purchasesDto })
           .expectStatus(201)
           .stores('purchaseId', 'id');
+      });
+
+      it('should return an array of medicines', function () {
+        return pactum
+          .spec()
+          .get('/medicines')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .inspect();
       });
     });
   });
@@ -361,6 +381,17 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
       });
     });
 
+    describe('View all Medicines', function () {
+      it('should return an array of medicines', function () {
+        return pactum
+          .spec()
+          .get('/medicines')
+          .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+          .expectStatus(200)
+          .inspect();
+      });
+    });
+
     describe('View all Sales', function () {
       it('should return an array of sales', function () {
         return pactum
@@ -415,7 +446,8 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withQueryParams('date', '$S{createdSaleDate}')
           .withQueryParams('withId', 'true')
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-          .expectStatus(200);
+          .expectStatus(200)
+          .inspect();
       });
     });
 
@@ -429,6 +461,15 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
           .expectStatus(200);
       });
+    });
+
+    it('should return an array of medicines', function () {
+      return pactum
+        .spec()
+        .get('/medicines')
+        .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
+        .expectStatus(200)
+        .inspect();
     });
 
     describe('Update Sale', function () {
@@ -448,7 +489,7 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
           .expectStatus(200);
       });
 
-      it('should return an array', function () {
+      it('should return an array of sales', function () {
         return pactum
           .spec()
           .get('/sales')
