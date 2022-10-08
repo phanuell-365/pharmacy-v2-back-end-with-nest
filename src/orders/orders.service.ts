@@ -190,19 +190,19 @@ export class OrdersService {
     const order = await this.orderRepository.findByPk(orderId);
 
     if (!order) {
-      throw new ForbiddenException('Order not found');
+      throw new ForbiddenException('Order not found!');
     }
     return order;
   }
 
-  async findOne(orderId: string, withId: boolean) {
+  async findOne(orderId: string, withId: string) {
     const order = await this.findOneById(orderId);
 
     if (order.status === OrderStatuses.CANCELLED) {
       throw new ForbiddenException('Order is cancelled');
     }
 
-    if (withId) return order;
+    if (withId === 'true') return order;
     else return await this.returnOrderWithoutIds(order);
   }
 

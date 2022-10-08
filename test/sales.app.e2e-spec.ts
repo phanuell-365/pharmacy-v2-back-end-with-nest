@@ -296,8 +296,8 @@ describe('Pharmacy Version 2 Sales App e2e', function () {
     describe('Add another purchase', function () {
       const purchasesDto: CreatePurchaseDto = {
         purchasedPackSizeQuantity: 70,
-        pricePerPackSize: 1500,
-        issueUnitPerPackSize: 200,
+        pricePerPackSize: 1200,
+        issueUnitPerPackSize: 100,
         expiryDate: new Date('2025/04/02'),
         OrderId: '$S{order2Id}',
       };

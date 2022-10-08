@@ -30,7 +30,13 @@ export class PurchasesController {
 
   @Get()
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
-  findAll(@Query('withId') withId: string, @Query('today') today: string) {
+  findAll(
+    @Query('withId') withId: string,
+    @Query('today') today: string,
+    @Query('resource') resource: string,
+  ) {
+    if (resource === 'profit')
+      return this.purchasesService.getPercentageProfit();
     return this.purchasesService.findAll(withId, today);
   }
 

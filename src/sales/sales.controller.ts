@@ -34,6 +34,15 @@ export class SalesController {
     );
   }
 
+  @Get('customer/:id')
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
+  findAllSalesByCustomer(
+    @Param('id') customerId: string,
+    @Query('withId') withId: string,
+  ) {
+    return this.salesService.findAllSalesByCustomerId(customerId, withId);
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
   findAll(
@@ -41,11 +50,15 @@ export class SalesController {
     @Query('status') status: string,
     @Query('date') saleDate: Date,
     @Query('customerId') customerId: string,
-    @Query('withId') withId: boolean,
+    @Query('withId') withId: string,
     @Query('today') today: boolean,
   ) {
     if (resource && resource === 'status') {
       return this.salesService.findSalesStatus();
+    }
+
+    if (customerId) {
+      return this.salesService.findAllSalesByCustomerId(customerId, withId);
     }
 
     switch (status) {
@@ -63,7 +76,7 @@ export class SalesController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACY_TECHNICIAN)
-  findOne(@Query('withId') withId: boolean, @Param('id') salesId: string) {
+  findOne(@Query('withId') withId: string, @Param('id') salesId: string) {
     return this.salesService.findOne(salesId, withId);
   }
 

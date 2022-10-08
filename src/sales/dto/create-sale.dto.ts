@@ -19,6 +19,10 @@ export class CreateSaleDto {
   status?: SalesStatus;
 
   @IsNotEmpty()
+  @IsNumber()
+  amountReceived: number;
+
+  @IsNotEmpty()
   @IsUUID()
   MedicineId: string;
 

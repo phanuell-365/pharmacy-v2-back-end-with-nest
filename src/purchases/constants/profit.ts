@@ -1,1 +1,1 @@
-export const PROFIT = 0.4;
+export const PROFIT = 40;

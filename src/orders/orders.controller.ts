@@ -60,7 +60,7 @@ export class OrdersController {
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST, Role.PHARMACIST_ASSISTANT)
-  findOne(@Query('withId') withId: boolean, @Param('id') orderId: string) {
+  findOne(@Query('withId') withId: string, @Param('id') orderId: string) {
     return this.ordersService.findOne(orderId, withId);
   }
 

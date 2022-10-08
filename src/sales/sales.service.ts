@@ -33,7 +33,7 @@ export class SalesService {
     });
 
     if (!customer) {
-      throw new ForbiddenException('Customer not found');
+      throw new ForbiddenException('Customer not found!');
     }
 
     return customer;
@@ -162,9 +162,11 @@ export class SalesService {
 
       const theMedicineIssueUnitPerPackSize = medicine.issueUnitPerPackSize;
 
-      const newMedicinePackSizeQuantity = Math.floor(
+      const newMedicinePackSizeQuantity = Math.trunc(
         theMedicineIssueUnitQuantity / theMedicineIssueUnitPerPackSize,
       );
+
+      console.error(newMedicinePackSizeQuantity);
       // await this.updateMedicinePackSize(
       //   medicineId,
       //   newMedicinePackSizeQuantity,
@@ -204,6 +206,7 @@ export class SalesService {
       totalPrices: data['totalPrices'],
       medicines: data['medicines'],
       saleDate: new Date(data['saleDate']).toLocaleDateString(),
+      amountReceived: data['amountReceived'],
     };
   }
 
@@ -218,14 +221,40 @@ export class SalesService {
       issueUnitPrice: data.issueUnitPrice,
       totalPrice: data.totalPrice,
       status: data.status,
+      amountReceived: data.amountReceived,
       saleDate: new Date(data['saleDate']).toLocaleDateString(),
     };
+  }
+
+  async findAllSalesByCustomerId(customerId: string, withId: string) {
+    const sales = await this.saleRepository.findAll({
+      where: {
+        [Op.or]: [
+          { status: SalesStatus.ISSUED },
+          { status: SalesStatus.PENDING },
+        ],
+        CustomerId: customerId,
+      },
+      // group: ['saleDate'],
+      // attributes: {
+      // exclude: ['MedicineId'],
+      // include: [[Sequelize.fn('COUNT', 'saleDate'), 'medicines']],
+      // },
+    });
+
+    if (withId !== 'true')
+      return await Promise.all(
+        sales.map(
+          async (value) => await this.returnSaleWithoutIds(value, true),
+        ),
+      );
+    else return sales;
   }
 
   async findAll(
     saleDate: Date,
     customerId: string,
-    withId: boolean,
+    withId: string,
     today: boolean,
   ) {
     let sales: Sale[];
@@ -306,7 +335,7 @@ export class SalesService {
       });
     }
 
-    if (!withId)
+    if (withId !== 'true')
       return await Promise.all(
         sales.map(
           async (value) => await this.returnSaleWithoutCustomerId(value),
@@ -315,8 +344,8 @@ export class SalesService {
     else return sales;
   }
 
-  async findAllIssuedSales(withId: boolean) {
-    if (withId)
+  async findAllIssuedSales(withId: string) {
+    if (withId === 'true')
       return await this.saleRepository.findAll({
         where: {
           status: SalesStatus.ISSUED,
@@ -337,8 +366,8 @@ export class SalesService {
     }
   }
 
-  async findAllPendingSales(withId: boolean) {
-    if (withId)
+  async findAllPendingSales(withId: string) {
+    if (withId === 'true')
       return await this.saleRepository.findAll({
         where: {
           status: SalesStatus.PENDING,
@@ -359,8 +388,8 @@ export class SalesService {
     }
   }
 
-  async findAllCancelledSales(withId: boolean) {
-    if (withId)
+  async findAllCancelledSales(withId: string) {
+    if (withId === 'true')
       return await this.saleRepository.findAll({
         where: {
           status: SalesStatus.CANCELLED,
@@ -385,8 +414,8 @@ export class SalesService {
     return SALES_STATUS;
   }
 
-  async findOne(salesId: string, withId: boolean) {
-    if (withId) return await this.getSale(salesId);
+  async findOne(salesId: string, withId: string) {
+    if (withId === 'true') return await this.getSale(salesId);
     return await this.returnSaleWithoutIds(await this.getSale(salesId), true);
   }
 
@@ -443,13 +472,13 @@ export class SalesService {
 
   async remove(salesId: string) {
     const sale = await this.getSale(salesId);
-
-    const medicine = await this.getMedicine(sale.MedicineId, true);
-
-    const newStockIssueQuantity =
-      medicine.issueUnitQuantity + sale.issueUnitQuantity;
-
-    await this.updateMedicineStock(sale.MedicineId, newStockIssueQuantity);
+    //
+    // const medicine = await this.getMedicine(sale.MedicineId, true);
+    //
+    // const newStockIssueQuantity =
+    //   medicine.issueUnitQuantity + sale.issueUnitQuantity;
+    //
+    // await this.updateMedicineStock(sale.MedicineId, newStockIssueQuantity);
 
     // change the sales status to cancelled
     return await sale.update({

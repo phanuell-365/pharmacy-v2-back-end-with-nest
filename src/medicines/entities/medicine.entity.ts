@@ -78,21 +78,21 @@ export class Medicine extends Model {
   // provided during a purchase
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitPurchasePrice: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitSellingPrice: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
@@ -106,35 +106,35 @@ export class Medicine extends Model {
   issueUnitQuantity: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   issueUnitPerPackSize: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   packSizePurchasePrice: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   packSizeSellingPrice: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
   profitPerPackSize: number;
 
   @Column({
-    type: DataType.DECIMAL,
+    type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })

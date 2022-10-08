@@ -57,6 +57,12 @@ export class Sale extends Model {
   })
   status: string;
 
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  amountReceived: number;
+
   @ForeignKey(() => Medicine)
   @Column({ allowNull: false, type: DataType.UUID })
   MedicineId: string;

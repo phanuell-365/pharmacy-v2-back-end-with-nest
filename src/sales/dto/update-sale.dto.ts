@@ -20,6 +20,10 @@ export class UpdateSaleDto extends PartialType(CreateSaleDto) {
   })
   status?: SalesStatus;
 
+  @IsOptional()
+  @IsNumber()
+  amountReceived?: number;
+
   @IsNotEmpty()
   @IsUUID()
   MedicineId: string;

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Order } from '../orders/entities';
 import { OrderStatuses } from '../orders/enum';
-import { PURCHASES_REPOSITORY } from './constants';
+import { PROFIT, PURCHASES_REPOSITORY } from './constants';
 import { ORDERS_REPOSITORY } from '../orders/constants';
 // import { STOCK_REPOSITORY } from '../stock/constants';
 import { Purchase } from './entities';
@@ -34,13 +34,19 @@ export class PurchasesService {
     private readonly suppliersRepository: typeof Supplier,
   ) {}
 
+  // resource functions
+
+  getPercentageProfit() {
+    return PROFIT;
+  }
+
   // utility functions
 
   async getOrder(orderId: string) {
     const order = await this.orderRepository.findByPk(orderId);
 
     if (!order) {
-      throw new ForbiddenException('Order not found');
+      throw new ForbiddenException('Order not found!');
     }
 
     if (order.status === OrderStatuses.CANCELLED) {
@@ -193,21 +199,22 @@ export class PurchasesService {
     medicine: Medicine,
     purchasePrice: number,
   ) {
-    // calculate new pack size sell price adding 40% interest rate to purchase price
-    const newPackSizeSellingPrice = purchasePrice + (purchasePrice * 40) / 100;
+    // calculate new pack size sell price adding PROFIT% interest rate to purchase price
+    const newPackSizeSellingPrice =
+      purchasePrice + (purchasePrice * PROFIT) / 100;
 
     // if new pack size selling price is greater than current pack size selling price
-    if (newPackSizeSellingPrice > medicine.packSizeSellingPrice) {
-      // update pack size sell price
-      await medicine.update({
-        packSizeSellingPrice: newPackSizeSellingPrice,
-      });
-    } else {
-      // else set pack size selling price to current pack size selling price
-      await medicine.update({
-        packSizeSellingPrice: medicine.packSizeSellingPrice,
-      });
-    }
+    // if (newPackSizeSellingPrice > medicine.packSizeSellingPrice) {
+    // update pack size sell price
+    await medicine.update({
+      packSizeSellingPrice: newPackSizeSellingPrice,
+    });
+    // } else {
+    // else set pack size selling price to current pack size selling price
+    // await medicine.update({
+    //   packSizeSellingPrice: medicine.packSizeSellingPrice,
+    // });
+    // }
 
     return medicine;
   }
@@ -278,9 +285,9 @@ export class PurchasesService {
 
   async calculateIssueUnitPurchasePrice(
     medicine: Medicine,
-    purchasePrice: number,
+    packSizePurchasePrice: number,
   ) {
-    return purchasePrice / medicine.issueUnitPerPackSize;
+    return packSizePurchasePrice / medicine.issueUnitPerPackSize;
   }
 
   async setMedicineIssueUnitPurchasePrice(
@@ -299,8 +306,8 @@ export class PurchasesService {
     const newIssueUnitSellingPrice =
       medicine.packSizeSellingPrice / medicine.issueUnitPerPackSize;
 
-    // calculate new issue unit sell price adding 40% interest rate to purchase price
-    // const newIssueUnitSellingPrice = purchasePrice + (purchasePrice * 40) / 100;
+    // calculate new issue unit sell price adding PROFIT% interest rate to purchase price
+    // const newIssueUnitSellingPrice = purchasePrice + (purchasePrice * PROFIT) / 100;
 
     // if new issue unit selling price is greater than current issue unit selling price
     if (newIssueUnitSellingPrice > medicine.issueUnitSellingPrice) {
@@ -398,6 +405,13 @@ export class PurchasesService {
 
     // calculate supplied quantity
     const suppliedQuantity = createPurchaseDto.purchasedPackSizeQuantity;
+
+    // check if the supplied quantity is greater than the ordered quantity
+    if (suppliedQuantity > order.orderQuantity) {
+      throw new PreconditionFailedException(
+        'Supplied quantity is more than the ordered quantity!',
+      );
+    }
 
     // calculate new order quantity
     const newOrderQuantity = await this.calculateNewOrderQuantity(
@@ -564,8 +578,10 @@ export class PurchasesService {
     return {
       id: purchase.id,
       purchasedPackSizeQuantity: purchase.purchasedPackSizeQuantity,
-      pricePerPackSize: formatter.format(purchase.pricePerPackSize),
-      totalPurchasePrice: formatter.format(purchase.totalPurchasePrice),
+      // pricePerPackSize: formatter.format(purchase.pricePerPackSize),
+      pricePerPackSize: purchase.pricePerPackSize,
+      // totalPurchasePrice: formatter.format(purchase.totalPurchasePrice),
+      totalPurchasePrice: purchase.totalPurchasePrice,
       issueUnitPerPackSize: purchase.issueUnitPerPackSize,
       profitMarginPercentagePerPackSize:
         purchase.profitMarginPercentagePerPackSize,
@@ -576,11 +592,11 @@ export class PurchasesService {
       totalIssueUnitQuantity: purchase.totalIssueUnitQuantity,
       expiryDate: purchase.expiryDate,
       OrderId: purchase.OrderId,
-      purchaseDate: new Date(purchase['purchaseDate']).toLocaleDateString(),
+      purchaseDate: purchase['purchaseDate'],
       orderStatus: (await this.getOrder(purchase.OrderId)).status,
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
-      orderDate: new Date(order['orderDate']).toLocaleDateString(),
+      orderDate: order['orderDate'],
     };
   }
 
@@ -730,6 +746,12 @@ export class PurchasesService {
     if (!this.validateExpiryDate(expiryDate)) {
       throw new BadRequestException('Invalid expiry date');
     }
+
+    // update the medicine's expiry date
+    await medicine.update({
+      expiryDate,
+    });
+
     // update the purchase
     await purchase.update({
       ...updatePurchaseDto,

@@ -27,9 +27,9 @@ export class AuthService {
     }
 
     const admin: CreateUserDto = {
-      username: 'Administrator',
+      username: 'Admin',
       email: 'administrator@localhost.com',
-      password: 'password_admin',
+      password: 'admin',
       phone: '0712345678',
       role: Role.ADMIN,
     };
@@ -37,9 +37,13 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     admin.password = await bcrypt.hash(admin.password, salt);
 
-    await this.usersRepository.create({
-      ...admin,
-    });
+    try {
+      await this.usersRepository.create({
+        ...admin,
+      });
+    } catch (error: any) {
+      console.error(error);
+    }
   }
 
   async login(user: AuthDto): Promise<{
