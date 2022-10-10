@@ -113,7 +113,10 @@ export class PurchasesService {
     const order = await this.getOrder(orderId);
 
     if (newOrderQuantity === 0) {
-      await order.update({ status: OrderStatuses.DELIVERED });
+      await order.update({
+        status: OrderStatuses.DELIVERED,
+        orderQuantity: newOrderQuantity,
+      });
     } else if (newOrderQuantity > 0) {
       await order.update({
         orderQuantity: newOrderQuantity,
@@ -397,6 +400,11 @@ export class PurchasesService {
     // get order
     const order = await this.getOrder(orderId);
 
+    if (order.status === OrderStatuses.DELIVERED)
+      throw new PreconditionFailedException(
+        'The order has already been delivered',
+      );
+
     // get medicine
     const medicine = await this.getMedicine(order.MedicineId);
 
@@ -568,8 +576,11 @@ export class PurchasesService {
   }
 
   async returnPurchaseWithoutId(purchase: Purchase) {
-    const order = await this.getOrder(purchase.OrderId);
+    const order = await this.orderRepository.findByPk(purchase.OrderId);
 
+    if (!order) {
+      throw new ForbiddenException('Order not found!');
+    }
     const formatter = new Intl.NumberFormat('en-KE', {
       style: 'currency',
       currency: 'KSH',
@@ -593,30 +604,38 @@ export class PurchasesService {
       expiryDate: purchase.expiryDate,
       OrderId: purchase.OrderId,
       purchaseDate: purchase['purchaseDate'],
-      orderStatus: (await this.getOrder(purchase.OrderId)).status,
+      orderStatus: order.status,
       medicine: await this.getMedicineName(order.MedicineId),
       supplier: await this.getSupplierName(order.SupplierId),
       orderDate: order['orderDate'],
     };
   }
 
-  async findAll(withId: string, today: string) {
-    let purchases: Purchase[];
-    if (today === 'true') {
-      const TODAY_START = new Date().setHours(0, 0, 0, 0);
-      const NOW = new Date();
+  async findAllPurchasesMadeToday(withId: string) {
+    const TODAY_START = new Date().setHours(0, 0, 0, 0);
+    const NOW = new Date();
 
-      purchases = await this.purchaseRepository.findAll({
-        where: {
-          purchaseDate: {
-            [Op.gt]: TODAY_START,
-            [Op.lt]: NOW,
-          },
+    const purchases = await this.purchaseRepository.findAll({
+      where: {
+        purchaseDate: {
+          [Op.gt]: TODAY_START,
+          [Op.lt]: NOW,
         },
-      });
-    } else {
-      purchases = await this.purchaseRepository.findAll();
+      },
+    });
+
+    if (withId === 'true') return purchases;
+    else {
+      return await Promise.all(
+        purchases.map(
+          async (value) => await this.returnPurchaseWithoutId(value),
+        ),
+      );
     }
+  }
+
+  async findAll(withId: string) {
+    const purchases = await this.purchaseRepository.findAll();
 
     if (withId === 'true') return purchases;
     else {

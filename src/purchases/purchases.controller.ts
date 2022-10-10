@@ -37,7 +37,9 @@ export class PurchasesController {
   ) {
     if (resource === 'profit')
       return this.purchasesService.getPercentageProfit();
-    return this.purchasesService.findAll(withId, today);
+    if (today === 'true')
+      return this.purchasesService.findAllPurchasesMadeToday(withId);
+    return this.purchasesService.findAll(withId);
   }
 
   @Get(':id')

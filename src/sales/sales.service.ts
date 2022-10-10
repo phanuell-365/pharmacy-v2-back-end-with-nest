@@ -70,7 +70,7 @@ export class SalesService {
   }
 
   async getSale(salesId: string) {
-    const sale = await this.saleRepository.findByPk(salesId);
+    const sale = await this.saleRepository.unscoped().findByPk(salesId);
 
     if (!sale) {
       throw new ForbiddenException('Sale not found');
@@ -235,11 +235,6 @@ export class SalesService {
         ],
         CustomerId: customerId,
       },
-      // group: ['saleDate'],
-      // attributes: {
-      // exclude: ['MedicineId'],
-      // include: [[Sequelize.fn('COUNT', 'saleDate'), 'medicines']],
-      // },
     });
 
     if (withId !== 'true')
@@ -251,89 +246,104 @@ export class SalesService {
     else return sales;
   }
 
-  async findAll(
-    saleDate: Date,
-    customerId: string,
-    withId: string,
-    today: boolean,
-  ) {
-    let sales: Sale[];
+  async findAllBySaleDate(saleDate: Date, withId: string) {
+    const sales = await this.saleRepository.findAll({
+      where: {
+        [Op.or]: [
+          { status: SalesStatus.ISSUED },
+          { status: SalesStatus.PENDING },
+        ],
+        saleDate: saleDate,
+      },
+      group: ['saleDate'],
+      attributes: {
+        // exclude: ['MedicineId'],
+        include: [
+          [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
+          [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
+        ],
+      },
+    });
 
-    if (saleDate) {
-      sales = await this.saleRepository.findAll({
-        where: {
-          [Op.or]: [
-            { status: SalesStatus.ISSUED },
-            { status: SalesStatus.PENDING },
-          ],
-          saleDate: saleDate,
-        },
-        group: ['saleDate'],
-        attributes: {
-          // exclude: ['MedicineId'],
-          include: [
-            [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
-            [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
-          ],
-        },
-      });
-    } else if (customerId) {
-      sales = await this.saleRepository.findAll({
-        where: {
-          [Op.or]: [
-            { status: SalesStatus.ISSUED },
-            { status: SalesStatus.PENDING },
-          ],
-          CustomerId: customerId,
-        },
-        group: ['saleDate'],
-        attributes: {
-          // exclude: ['MedicineId'],
-          include: [[Sequelize.fn('COUNT', 'saleDate'), 'medicines']],
-        },
-      });
-    } else if (today) {
-      const TODAY_START = new Date().setHours(0, 0, 0, 0);
-      const NOW = new Date();
+    if (withId !== 'true')
+      return await Promise.all(
+        sales.map(
+          async (value) => await this.returnSaleWithoutCustomerId(value),
+        ),
+      );
+    else return sales;
+  }
 
-      sales = await this.saleRepository.findAll({
-        where: {
-          [Op.or]: [
-            { status: SalesStatus.ISSUED },
-            { status: SalesStatus.PENDING },
-          ],
-          saleDate: {
-            [Op.gt]: TODAY_START,
-            [Op.lt]: NOW,
-          },
+  async findAllSalesMadeToday(withId: string) {
+    const TODAY_START = new Date().setHours(0, 0, 0, 0);
+    const NOW = new Date();
+
+    const sales = await this.saleRepository.findAll({
+      where: {
+        [Op.or]: [
+          { status: SalesStatus.ISSUED },
+          { status: SalesStatus.PENDING },
+        ],
+        saleDate: {
+          [Op.gt]: TODAY_START,
+          [Op.lt]: NOW,
         },
-        group: ['saleDate'],
-        attributes: {
-          // exclude: ['MedicineId'],
-          include: [
-            [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
-            [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
-          ],
-        },
-      });
-    } else {
-      sales = await this.saleRepository.findAll({
-        where: {
-          [Op.or]: [
-            { status: SalesStatus.ISSUED },
-            { status: SalesStatus.PENDING },
-          ],
-        },
-        group: ['saleDate'],
-        attributes: {
-          // exclude: ['MedicineId'],
-          include: [
-            [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
-            [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
-          ],
-        },
-      });
-    }
+      },
+      group: ['saleDate'],
+      attributes: {
+        // exclude: ['MedicineId'],
+        include: [
+          [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
+          [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
+        ],
+      },
+    });
+
+    if (withId !== 'true')
+      return await Promise.all(
+        sales.map(
+          async (value) => await this.returnSaleWithoutCustomerId(value),
+        ),
+      );
+    else return sales;
+  }
+
+  async findAllUnGroupedSales(withId: string) {
+    const sales = await this.saleRepository.findAll({
+      where: {
+        [Op.or]: [
+          { status: SalesStatus.ISSUED },
+          { status: SalesStatus.PENDING },
+        ],
+      },
+    });
+
+    if (withId !== 'true')
+      return await Promise.all(
+        sales.map(
+          async (value) => await this.returnSaleWithoutIds(value, false),
+        ),
+      );
+    else return sales;
+  }
+
+  async findAllGroupedBySaleDate(withId: string) {
+    const sales = await this.saleRepository.unscoped().findAll({
+      where: {
+        [Op.or]: [
+          { status: SalesStatus.ISSUED },
+          { status: SalesStatus.PENDING },
+        ],
+      },
+      group: ['saleDate'],
+      attributes: {
+        // exclude: ['MedicineId'],
+        include: [
+          [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
+          [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
+        ],
+      },
+    });
 
     if (withId !== 'true')
       return await Promise.all(

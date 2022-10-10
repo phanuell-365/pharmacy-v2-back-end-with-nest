@@ -52,6 +52,7 @@ export class SalesController {
     @Query('customerId') customerId: string,
     @Query('withId') withId: string,
     @Query('today') today: boolean,
+    @Query('ungrouped') ungrouped: string,
   ) {
     if (resource && resource === 'status') {
       return this.salesService.findSalesStatus();
@@ -61,6 +62,10 @@ export class SalesController {
       return this.salesService.findAllSalesByCustomerId(customerId, withId);
     }
 
+    if (today) return this.salesService.findAllSalesMadeToday(withId);
+    if (saleDate) return this.salesService.findAllBySaleDate(saleDate, withId);
+    if (ungrouped) return this.salesService.findAllUnGroupedSales(withId);
+
     switch (status) {
       case SalesStatus.ISSUED:
         return this.salesService.findAllIssuedSales(withId);
@@ -69,7 +74,7 @@ export class SalesController {
       case SalesStatus.CANCELLED:
         return this.salesService.findAllCancelledSales(withId);
       default: {
-        return this.salesService.findAll(saleDate, customerId, withId, today);
+        return this.salesService.findAllGroupedBySaleDate(withId);
       }
     }
   }

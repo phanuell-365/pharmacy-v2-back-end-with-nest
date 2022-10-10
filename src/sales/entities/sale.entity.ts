@@ -16,7 +16,7 @@ import { Customer } from '../../customers/entities';
   paranoid: true,
   defaultScope: {
     attributes: {
-      exclude: ['deletedAt', 'updatedAt'],
+      exclude: ['deletedAt', 'updatedAt', 'amountReceived'],
     },
   },
 })
