@@ -198,7 +198,7 @@ export class ReportsService {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
-      'Content-Disposition': 'attachment;filename=users-table-report.pdf',
+      'Content-Disposition': `attachment;filename=users report ${new Date().toISOString()}.pdf`,
     });
 
     const users = await this.usersService.findAll();
@@ -275,28 +275,15 @@ export class ReportsService {
     ungrouped,
     selection: SalesStatus,
   ) {
-    const filename = (() =>
-      grouped === 'true'
-        ? 'sales'
-        : ungrouped === 'true'
-        ? 'all sales'
-        : 'sales')();
-
-    const stream = res.writeHead(200, {
-      'Content-Type': 'application/pdf',
-      'access-control-expose-headers': 'Content-Disposition',
-      'Content-Disposition': `attachment; filename=${filename} report ${new Date().toISOString()}.pdf`,
-    });
+    let filename: string;
 
     let sales: Sale[] | any[];
     let attributes: string[];
 
-    console.log('selection => ', selection);
-
     switch (selection) {
       case SalesStatus.CANCELLED:
         sales = await this.salesService.findAllCancelledSales('false');
-
+        filename = 'cancelled sales';
         if (sales.length > 0)
           attributes = Object.keys(sales[0]).filter(
             (value) => value !== 'id' && value !== 'amountReceived',
@@ -307,6 +294,7 @@ export class ReportsService {
         break;
       case SalesStatus.ISSUED:
         sales = await this.salesService.findAllIssuedSales('false');
+        filename = 'issued sales';
 
         attributes = Object.keys(sales[0]).filter(
           (value) => value !== 'id' && value !== 'amountReceived',
@@ -314,6 +302,7 @@ export class ReportsService {
         break;
       case SalesStatus.PENDING:
         sales = await this.salesService.findAllPendingSales('false');
+        filename = 'pending sales';
 
         attributes = Object.keys(sales[0]).filter(
           (value) => value !== 'id' && value !== 'amountReceived',
@@ -322,17 +311,52 @@ export class ReportsService {
       default:
         if (ungrouped === 'true') {
           sales = await this.salesService.findAllUnGroupedSales('false');
+          filename = 'all sales';
+
           attributes = Object.keys(sales[0]).filter(
             (value) => value !== 'id' && value !== 'amountReceived',
           );
         } else if (grouped === 'true') {
           sales = await this.salesService.findAllGroupedBySaleDate('false');
+          filename = 'sales';
           attributes = Object.keys(sales[0]).filter((value) => value !== 'id');
         }
     }
+
+    const newSalesEntities = sales.map((value) => {
+      const salesMap: Map<string, any> = new Map<string, any>();
+
+      attributes.forEach((value1) => {
+        salesMap.set(value1, value[value1]);
+      });
+
+      const saleEntity = Object.fromEntries(salesMap.entries());
+
+      saleEntity['issueUnitPrice'] = this.currencyFormatter(
+        +saleEntity['issueUnitPrice'],
+      );
+      saleEntity['totalPrice'] = this.currencyFormatter(
+        +saleEntity['totalPrice'],
+      );
+      saleEntity['totalPrices'] = this.currencyFormatter(
+        +saleEntity['totalPrices'],
+      );
+      saleEntity['amountReceived'] = this.currencyFormatter(
+        +saleEntity['amountReceived'],
+      );
+
+      return saleEntity;
+    });
+
     const headers = await this.generateTableHeaders(attributes);
 
-    const rows = await this.generateTableRows(sales, attributes);
+    const rows = await this.generateTableRows(newSalesEntities, attributes);
+
+    const stream = res.writeHead(200, {
+      'Content-Type': 'application/pdf',
+      'access-control-expose-headers': 'Content-Disposition',
+      'Content-Disposition': `attachment; filename=${filename} report ${new Date().toISOString()}.pdf`,
+    });
 
     await this.buildTable(
       (chunk) => stream.write(chunk),
