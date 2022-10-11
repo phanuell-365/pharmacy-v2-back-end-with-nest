@@ -201,11 +201,11 @@ export class SalesService {
     return {
       id: data.id,
       customer: await this.getCustomerName(data.CustomerId, true),
+      medicines: data['medicines'],
       // issueUnitQuantity: data.issueUnitQuantity,
       // issueUnitPrice: data.issueUnitPrice,
-      totalPrices: data['totalPrices'],
-      medicines: data['medicines'],
       saleDate: new Date(data['saleDate']).toLocaleDateString(),
+      totalPrices: data['totalPrices'],
       amountReceived: data['amountReceived'],
     };
   }
