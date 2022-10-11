@@ -35,7 +35,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 .env
-#/keys
-#/keys*
-#/src/auth/keys
-#/src/auth/keys*
+/keys
+/keys*
+/src/auth/keys
+/src/auth/keys*
