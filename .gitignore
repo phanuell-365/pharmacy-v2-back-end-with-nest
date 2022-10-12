@@ -39,3 +39,4 @@ lerna-debug.log*
 #/keys*
 #/src/auth/keys
 #/src/auth/keys*
+/tests/stock.app.e2e.spec.ts
