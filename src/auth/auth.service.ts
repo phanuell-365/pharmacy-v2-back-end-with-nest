@@ -18,31 +18,33 @@ export class AuthService {
   async createDefaultAdmin() {
     const user = await this.usersRepository.findOne({
       where: {
-        username: 'Administrator',
+        role: Role.ADMIN,
       },
     });
 
     if (user) {
       return user;
-    }
+    } else {
+      const admin: CreateUserDto = {
+        username: 'Admin',
+        email: 'administrator@localhost.com',
+        password: 'admin',
+        phone: '0712345678',
+        role: Role.ADMIN,
+      };
 
-    const admin: CreateUserDto = {
-      username: 'Admin',
-      email: 'administrator@localhost.com',
-      password: 'admin',
-      phone: '0712345678',
-      role: Role.ADMIN,
-    };
+      const salt = await bcrypt.genSalt(10);
+      admin.password = await bcrypt.hash(admin.password, salt);
 
-    const salt = await bcrypt.genSalt(10);
-    admin.password = await bcrypt.hash(admin.password, salt);
+      try {
+        await this.usersRepository.create({
+          ...admin,
+        });
+      } catch (error: any) {
+        console.error(error);
+      }
 
-    try {
-      await this.usersRepository.create({
-        ...admin,
-      });
-    } catch (error: any) {
-      console.error(error);
+      return undefined;
     }
   }
 
@@ -53,8 +55,13 @@ export class AuthService {
     expires_in: string;
   }> {
     // create a default admin if there is none
-    await this.createDefaultAdmin();
+    const createdUser = await this.createDefaultAdmin();
 
+    if (createdUser) {
+      if (createdUser.username !== user.username) {
+        throw new ForbiddenException('Invalid username or password!');
+      }
+    }
     const userFound = await this.usersRepository.unscoped().findOne({
       where: {
         username: user.username,
@@ -62,7 +69,11 @@ export class AuthService {
     });
 
     if (!userFound) {
-      throw new ForbiddenException('Invalid credentials');
+      throw new ForbiddenException('Invalid username or password!');
+    }
+
+    if (user.username !== userFound.username) {
+      throw new ForbiddenException('Invalid username or password!');
     }
 
     const isPasswordMatching = await bcrypt.compare(
@@ -71,7 +82,7 @@ export class AuthService {
     );
 
     if (!isPasswordMatching) {
-      throw new ForbiddenException('Invalid credentials');
+      throw new ForbiddenException('Invalid username or password!');
     }
 
     return {
