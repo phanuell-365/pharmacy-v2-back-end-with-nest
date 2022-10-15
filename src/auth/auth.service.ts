@@ -54,24 +54,30 @@ export class AuthService {
     userId: string;
     expires_in: string;
   }> {
-    // create a default admin if there is none
-    const createdUser = await this.createDefaultAdmin();
-
-    if (createdUser) {
-      if (createdUser.username !== user.username) {
-        throw new ForbiddenException('Invalid username or password!');
-      }
-    }
-    const userFound = await this.usersRepository.unscoped().findOne({
+    let userFound = await this.usersRepository.unscoped().findOne({
       where: {
         username: user.username,
       },
     });
 
+    // if no user is found
+    // check if there is an admin
     if (!userFound) {
-      throw new ForbiddenException('Invalid username or password!');
+      const admin = await this.usersRepository.unscoped().findOne({
+        where: {
+          role: Role.ADMIN,
+        },
+      });
+
+      console.log(admin);
+
+      if (!admin) {
+        // create a default admin if there is none
+        userFound = await this.createDefaultAdmin();
+      }
     }
 
+    // console.error('the user -> ', user);
     if (user.username !== userFound.username) {
       throw new ForbiddenException('Invalid username or password!');
     }
