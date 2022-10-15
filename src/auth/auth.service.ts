@@ -78,7 +78,7 @@ export class AuthService {
     }
 
     // console.error('the user -> ', user);
-    if (user.username !== userFound.username) {
+    if (user.username !== userFound?.username) {
       throw new ForbiddenException('Invalid username or password!');
     }
 
