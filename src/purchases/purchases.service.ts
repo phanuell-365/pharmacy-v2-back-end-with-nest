@@ -18,6 +18,8 @@ import { Medicine } from '../medicines/entities';
 import { SUPPLIERS_REPOSITORY } from '../suppliers/constants';
 import { Supplier } from '../suppliers/entities';
 import { Op } from 'sequelize';
+import * as moment from 'moment';
+import { DateQuantityTotalDto } from '../sales/dto';
 
 @Injectable()
 export class PurchasesService {
@@ -80,7 +82,9 @@ export class PurchasesService {
   }
 
   async getMedicine(medicineId: string) {
-    const medicine = await this.medicinesRepository.findByPk(medicineId);
+    const medicine = await this.medicinesRepository.findByPk(medicineId, {
+      paranoid: false,
+    });
 
     if (!medicine) {
       throw new ForbiddenException('Medicine not found!');
@@ -409,7 +413,7 @@ export class PurchasesService {
     const medicine = await this.getMedicine(order.MedicineId);
 
     // check if the medicine is already expired
-    await this.checkIfMedicineIsExpired(medicine);
+    // await this.checkIfMedicineIsExpired(medicine);
 
     // calculate supplied quantity
     const suppliedQuantity = createPurchaseDto.purchasedPackSizeQuantity;
@@ -581,10 +585,6 @@ export class PurchasesService {
     if (!order) {
       throw new ForbiddenException('Order not found!');
     }
-    const formatter = new Intl.NumberFormat('en-KE', {
-      style: 'currency',
-      currency: 'KSH',
-    });
 
     return {
       id: purchase.id,
@@ -635,7 +635,9 @@ export class PurchasesService {
   }
 
   async findAll(withId: string) {
-    const purchases = await this.purchaseRepository.findAll();
+    const purchases = await this.purchaseRepository.findAll({
+      paranoid: false,
+    });
 
     if (withId === 'true') return purchases;
     else {
@@ -739,6 +741,8 @@ export class PurchasesService {
     // update the order quantity
     await order.update({
       orderQuantity: newOrderQuantity,
+      status:
+        newOrderQuantity === 0 ? OrderStatuses.DELIVERED : OrderStatuses.ACTIVE,
     });
 
     // update the medicine issue unit per pack size
@@ -864,5 +868,66 @@ export class PurchasesService {
   async remove(purchaseId: string) {
     const purchase = await this.findOneById(purchaseId);
     return await purchase.destroy();
+  }
+
+  async findMonthlyReport() {
+    const today = moment();
+    const startOfMonth = moment().startOf('month');
+    const dayAfterStartOfMonth = moment().startOf('month').add(1, 'day');
+    const someDay = moment('2022-10', 'YYYY-MM');
+
+    console.warn(someDay.toDate());
+    console.warn('End of the month', someDay.endOf('month'));
+    console.warn(moment().month('January').startOf('month').toDate());
+    console.warn(
+      'End of that month _/> ',
+      moment().month('January').startOf('month').endOf('month'),
+    );
+
+    const dateQuantityTotalArr: DateQuantityTotalDto[] = [];
+
+    while (startOfMonth.date() <= today.date()) {
+      const DAY_START = startOfMonth.toDate();
+      const DAY_END = dayAfterStartOfMonth.toDate();
+
+      const purchases = await this.purchaseRepository.findAll({
+        paranoid: false,
+        where: {
+          purchaseDate: {
+            [Op.gt]: DAY_START,
+            [Op.lt]: DAY_END,
+          },
+        },
+      });
+
+      const purchasesTotalPurchasesPrices = purchases.map(
+        (value) => value.totalPurchasePrice,
+      );
+
+      let totalPurchasesPrice: number;
+
+      if (purchasesTotalPurchasesPrices.length > 0)
+        totalPurchasesPrice = <number>(
+          purchasesTotalPurchasesPrices.reduce(
+            (previousValue, currentValue) => +previousValue + +currentValue,
+          )
+        );
+      else totalPurchasesPrice = 0;
+
+      const purchaseQuantity = purchases.length;
+
+      const purchasesDate = startOfMonth.toDate();
+
+      dateQuantityTotalArr.push({
+        date: purchasesDate,
+        quantity: purchaseQuantity,
+        total: Number(totalPurchasesPrice),
+      });
+
+      startOfMonth.add(1, 'day');
+      dayAfterStartOfMonth.add(1, 'day');
+    }
+
+    return dateQuantityTotalArr;
   }
 }

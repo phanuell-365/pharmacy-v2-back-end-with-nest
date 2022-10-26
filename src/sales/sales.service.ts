@@ -4,7 +4,7 @@ import {
   Injectable,
   PreconditionFailedException,
 } from '@nestjs/common';
-import { CreateSaleDto, UpdateSaleDto } from './dto';
+import { CreateSaleDto, DateQuantityTotalDto, UpdateSaleDto } from './dto';
 import { Sale } from './entities';
 import { Op } from 'sequelize';
 import { SALES_REPOSITORY, SALES_STATUS } from './constants';
@@ -14,6 +14,7 @@ import { CUSTOMERS_REPOSITORY } from '../customers/constants';
 import { MEDICINES_REPOSITORY } from '../medicines/constants/medicines.repository';
 import { Medicine } from '../medicines/entities';
 import { Sequelize } from 'sequelize-typescript';
+import * as moment from 'moment';
 
 @Injectable()
 export class SalesService {
@@ -226,7 +227,11 @@ export class SalesService {
     };
   }
 
-  async findAllSalesByCustomerId(customerId: string, withId: string) {
+  async findAllSalesByCustomerId(
+    customerId: string,
+    withId: string,
+    saleDate: string,
+  ) {
     const sales = await this.saleRepository.findAll({
       where: {
         [Op.or]: [
@@ -234,41 +239,38 @@ export class SalesService {
           { status: SalesStatus.PENDING },
         ],
         CustomerId: customerId,
+        saleDate,
       },
     });
 
     if (withId !== 'true')
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutIds(value, true),
+          async (value) => await this.returnSaleWithoutIds(value, false),
         ),
       );
     else return sales;
   }
 
   async findAllBySaleDate(saleDate: Date, withId: string) {
+    const DAY_END = moment(saleDate).add(1, 'day');
     const sales = await this.saleRepository.findAll({
       where: {
         [Op.or]: [
           { status: SalesStatus.ISSUED },
           { status: SalesStatus.PENDING },
         ],
-        saleDate: saleDate,
-      },
-      group: ['saleDate'],
-      attributes: {
-        // exclude: ['MedicineId'],
-        include: [
-          [Sequelize.fn('COUNT', 'saleDate'), 'medicines'],
-          [Sequelize.fn('SUM', Sequelize.col('totalPrice')), 'totalPrices'],
-        ],
+        saleDate: {
+          [Op.gt]: saleDate,
+          [Op.lt]: DAY_END,
+        },
       },
     });
 
     if (withId !== 'true')
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutCustomerId(value),
+          async (value) => await this.returnSaleWithoutIds(value, false),
         ),
       );
     else return sales;
@@ -370,7 +372,7 @@ export class SalesService {
 
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutIds(value, true),
+          async (value) => await this.returnSaleWithoutIds(value, false),
         ),
       );
     }
@@ -392,7 +394,7 @@ export class SalesService {
 
       return await Promise.all(
         sales.map(
-          async (value) => await this.returnSaleWithoutIds(value, true),
+          async (value) => await this.returnSaleWithoutIds(value, false),
         ),
       );
     }
@@ -426,7 +428,7 @@ export class SalesService {
 
   async findOne(salesId: string, withId: string) {
     if (withId === 'true') return await this.getSale(salesId);
-    return await this.returnSaleWithoutIds(await this.getSale(salesId), true);
+    return await this.returnSaleWithoutIds(await this.getSale(salesId), false);
   }
 
   async update(
@@ -494,5 +496,58 @@ export class SalesService {
     return await sale.update({
       status: SalesStatus.CANCELLED,
     });
+  }
+
+  // calculates the monthly sales totals and quantity
+  async findMonthlyReport() {
+    const today = moment();
+    const startOfMonth = moment().startOf('month');
+    const dayAfterStartOfMonth = moment().startOf('month').add(1, 'day');
+
+    // type DateQuantityTotal = [Date, number, number];
+
+    const dateQuantityTotalArr: DateQuantityTotalDto[] = [];
+
+    while (startOfMonth.date() <= today.date()) {
+      const DAY_START = startOfMonth.toDate();
+      const DAY_END = dayAfterStartOfMonth.toDate();
+
+      const sales = await this.saleRepository.findAll({
+        where: {
+          [Op.or]: [
+            { status: SalesStatus.ISSUED },
+            { status: SalesStatus.PENDING },
+          ],
+          saleDate: {
+            [Op.gt]: DAY_START,
+            [Op.lt]: DAY_END,
+          },
+        },
+      });
+
+      const salesTotalPrices = sales.map((value) => value.totalPrice);
+
+      let totalSalesPrice: number;
+      if (salesTotalPrices.length > 0)
+        totalSalesPrice = salesTotalPrices.reduce(
+          (previousValue, currentValue) => previousValue + currentValue,
+        );
+      else totalSalesPrice = 0;
+
+      const salesQuantity = sales.length;
+
+      const salesDate = startOfMonth.toDate();
+
+      dateQuantityTotalArr.push({
+        date: salesDate,
+        quantity: salesQuantity,
+        total: totalSalesPrice,
+      });
+
+      startOfMonth.add(1, 'day');
+      dayAfterStartOfMonth.add(1, 'day');
+    }
+
+    return dateQuantityTotalArr;
   }
 }

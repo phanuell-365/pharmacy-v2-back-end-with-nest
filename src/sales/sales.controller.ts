@@ -9,13 +9,17 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto, UpdateSaleDto } from './dto';
 import { SalesStatus } from './enums';
 import { Role } from '../users/enums';
 import { Roles } from '../auth/decorator';
+import { JwtGuard } from '../auth/guards';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
+@UseGuards(JwtGuard, RolesGuard)
 @Controller('sales')
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
@@ -39,8 +43,21 @@ export class SalesController {
   findAllSalesByCustomer(
     @Param('id') customerId: string,
     @Query('withId') withId: string,
+    @Query('saleDate') saleDate: string,
   ) {
-    return this.salesService.findAllSalesByCustomerId(customerId, withId);
+    return this.salesService.findAllSalesByCustomerId(
+      customerId,
+      withId,
+      saleDate,
+    );
+  }
+
+  @Get('/category/:date')
+  findAllSalesByDate(
+    @Param('date') saleDate: string,
+    @Query('withId') withId: string,
+  ) {
+    return this.salesService.findAllBySaleDate(new Date(saleDate), withId);
   }
 
   @Get()
@@ -58,9 +75,9 @@ export class SalesController {
       return this.salesService.findSalesStatus();
     }
 
-    if (customerId) {
-      return this.salesService.findAllSalesByCustomerId(customerId, withId);
-    }
+    // if (customerId) {
+    //   return this.salesService.findAllSalesByCustomerId(customerId, withId);
+    // }
 
     if (today) return this.salesService.findAllSalesMadeToday(withId);
     if (saleDate) return this.salesService.findAllBySaleDate(saleDate, withId);
@@ -77,6 +94,12 @@ export class SalesController {
         return this.salesService.findAllGroupedBySaleDate(withId);
       }
     }
+  }
+
+  @Roles(Role.ADMIN, Role.CHIEF_PHARMACIST)
+  @Get('monthly-report')
+  findMonthlyReport() {
+    return this.salesService.findMonthlyReport();
   }
 
   @Get(':id')
