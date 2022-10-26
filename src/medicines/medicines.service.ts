@@ -61,8 +61,13 @@ export class MedicinesService {
     });
   }
 
-  async findAll(): Promise<Medicine[]> {
-    return await this.medicinesRepository.findAll();
+  async findAll(paranoid: string): Promise<Medicine[]> {
+    switch (paranoid) {
+      case 'true':
+        return await this.medicinesRepository.findAll();
+      case 'false':
+        return await this.medicinesRepository.findAll({ paranoid: false });
+    }
   }
 
   async findOneWithoutStockInfo(id: string) {
@@ -85,8 +90,23 @@ export class MedicinesService {
     return medicine;
   }
 
-  async findOne(id: string): Promise<Medicine> {
-    const medicine = await this.medicinesRepository.findByPk(id);
+  async findOne(id: string, paranoid: string): Promise<Medicine> {
+    let medicine: Medicine;
+
+    switch (paranoid) {
+      case 'true':
+        medicine = await this.medicinesRepository.findByPk(id, {
+          paranoid: true,
+        });
+        break;
+      case 'false':
+        medicine = await this.medicinesRepository.findByPk(id, {
+          paranoid: false,
+        });
+        break;
+      default:
+        medicine = await this.medicinesRepository.findByPk(id);
+    }
 
     if (!medicine) {
       throw new ForbiddenException('Medicine not found!');
@@ -95,25 +115,65 @@ export class MedicinesService {
     return medicine;
   }
 
-  async findAllMedicineOutOfStock() {
-    return await this.medicinesRepository.findAll({
-      where: {
-        packSizeQuantity: {
-          [Op.lt]: 2,
-        },
-      },
-    });
+  async findAllMedicineOutOfStock(paranoid: string) {
+    switch (paranoid) {
+      case 'true':
+        return await this.medicinesRepository.findAll({
+          where: {
+            packSizeQuantity: {
+              [Op.lt]: 2,
+            },
+          },
+        });
+      case 'false':
+        return await this.medicinesRepository.findAll({
+          where: {
+            packSizeQuantity: {
+              [Op.lt]: 2,
+            },
+          },
+          paranoid: false,
+        });
+      default:
+        return await this.medicinesRepository.findAll({
+          where: {
+            packSizeQuantity: {
+              [Op.lt]: 2,
+            },
+          },
+        });
+    }
   }
 
-  async findAllExpiredMedicines() {
+  async findAllExpiredMedicines(paranoid: string) {
     const NOW = new Date();
-    return await this.medicinesRepository.findAll({
-      where: {
-        expiryDate: {
-          [Op.lt]: NOW,
-        },
-      },
-    });
+    switch (paranoid) {
+      case 'true':
+        return await this.medicinesRepository.findAll({
+          where: {
+            expiryDate: {
+              [Op.lt]: NOW,
+            },
+          },
+        });
+      case 'false':
+        return await this.medicinesRepository.findAll({
+          where: {
+            expiryDate: {
+              [Op.lt]: NOW,
+            },
+          },
+          paranoid: false,
+        });
+      default:
+        return await this.medicinesRepository.findAll({
+          where: {
+            expiryDate: {
+              [Op.lt]: NOW,
+            },
+          },
+        });
+    }
   }
 
   findMedicineStrengths() {

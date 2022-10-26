@@ -87,7 +87,9 @@ export class OrdersService {
   }
 
   async getMedicine(medicineId: string) {
-    const medicine = await this.medicineRepository.findByPk(medicineId);
+    const medicine = await this.medicineRepository.findByPk(medicineId, {
+      paranoid: false,
+    });
 
     if (!medicine) {
       throw new ForbiddenException('Medicine not found!');
@@ -140,7 +142,7 @@ export class OrdersService {
     // await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
     // await this.checkIfStockPackSizePriceIsValid(medicineId);
     // await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
-    await this.checkIfStockIsExpired(medicineId);
+    // await this.checkIfStockIsExpired(medicineId);
 
     await this.getSupplier(supplierId);
 
@@ -314,7 +316,7 @@ export class OrdersService {
     // await this.checkIfStockIssueQuantityPriceIsValid(medicineId);
     // await this.checkIfStockPackSizePriceIsValid(medicineId);
     // await this.checkIfStockIssueUnitPackSizeIsValid(medicineId);
-    await this.checkIfStockIsExpired(medicineId);
+    // await this.checkIfStockIsExpired(medicineId);
 
     const order = await this.findOneById(orderId);
 

@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
@@ -39,8 +40,8 @@ export class CustomersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.customersService.findOne(id);
+  findOne(@Param('id') id: string, @Query('paranoid') paranoid: string) {
+    return this.customersService.findOne(id, paranoid);
   }
 
   @Patch(':id')

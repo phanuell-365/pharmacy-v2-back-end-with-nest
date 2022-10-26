@@ -69,8 +69,6 @@ export class AuthService {
         },
       });
 
-      console.log(admin);
-
       if (!admin) {
         // create a default admin if there is none
         userFound = await this.createDefaultAdmin();

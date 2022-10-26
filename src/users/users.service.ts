@@ -69,7 +69,24 @@ export class UsersService {
     return user;
   }
 
-  fetchUsersRoles() {
+  async fetchUsersRoles(filter?: string) {
+    const admin = await this.usersRepository.findOne({
+      where: { role: Role.ADMIN },
+    });
+    const chiefPharmacist = await this.usersRepository.findOne({
+      where: { role: Role.CHIEF_PHARMACIST },
+    });
+
+    if (filter === 'true') {
+      if (admin && chiefPharmacist)
+        return USERS_ROLES.filter(
+          (value) => value !== Role.CHIEF_PHARMACIST && value !== Role.ADMIN,
+        );
+
+      if (admin) return USERS_ROLES.filter((value) => value !== Role.ADMIN);
+      if (chiefPharmacist)
+        return USERS_ROLES.filter((value) => value !== Role.CHIEF_PHARMACIST);
+    }
     return USERS_ROLES;
   }
 

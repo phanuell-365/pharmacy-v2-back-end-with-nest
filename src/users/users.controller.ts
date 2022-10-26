@@ -37,9 +37,12 @@ export class UsersController {
     Role.PHARMACY_TECHNICIAN,
   )
   @Get('search')
-  findResource(@Query('resource') resource: string) {
+  findResource(
+    @Query('resource') resource: string,
+    @Query('filter') filter: string,
+  ) {
     if (resource && resource === 'roles') {
-      return this.usersService.fetchUsersRoles();
+      return this.usersService.fetchUsersRoles(filter);
     }
   }
 

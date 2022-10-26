@@ -39,8 +39,20 @@ export class CustomersService {
     return await this.customersRepository.findAll();
   }
 
-  async findOne(id: string) {
-    const customer = await this.customersRepository.findByPk(id);
+  async findOne(id: string, paranoid: string) {
+    let customer: Customer;
+    switch (paranoid) {
+      case 'true':
+        customer = await this.customersRepository.findByPk(id);
+        break;
+      case 'false':
+        customer = await this.customersRepository.findByPk(id, {
+          paranoid: false,
+        });
+        break;
+      default:
+        customer = await this.customersRepository.findByPk(id);
+    }
 
     if (!customer) {
       throw new ForbiddenException('Customer not found!');

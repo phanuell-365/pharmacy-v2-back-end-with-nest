@@ -30,24 +30,27 @@ export class MedicinesController {
   }
 
   @Get()
-  findAll(@Query('resource') resource: string) {
+  findAll(
+    @Query('resource') resource: string,
+    @Query('paranoid') paranoid: string,
+  ) {
     switch (resource) {
       case 'strengths':
         return this.medicinesService.findMedicineStrengths();
       case 'dose-forms':
         return this.medicinesService.findMedicineDoseForms();
       case 'out-of-stock':
-        return this.medicinesService.findAllMedicineOutOfStock();
+        return this.medicinesService.findAllMedicineOutOfStock(paranoid);
       case 'expired':
-        return this.medicinesService.findAllExpiredMedicines();
+        return this.medicinesService.findAllExpiredMedicines(paranoid);
     }
 
-    return this.medicinesService.findAll();
+    return this.medicinesService.findAll(paranoid);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.medicinesService.findOne(id);
+  findOne(@Param('id') id: string, @Query('paranoid') paranoid: string) {
+    return this.medicinesService.findOne(id, paranoid);
   }
 
   @Patch(':id')
