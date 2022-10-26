@@ -17,52 +17,10 @@ import { Customer } from '../customers/entities';
 import { Supplier } from '../suppliers/entities';
 import { OrderStatuses } from '../orders/enum';
 import { SalesStatus } from '../sales/enums';
-
-interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface Header {
-  label?: string;
-  property?: string;
-  width?: number;
-  align?: string; //default 'left'
-  valign?: string;
-  headerColor?: string; //default '#BEBEBE'
-  headerOpacity?: number; //default '0.5'
-  headerAlign?: string; //default 'left'
-  columnColor?: string;
-  columnOpacity?: number;
-  renderer?: (
-    value: any,
-    indexColumn?: number,
-    indexRow?: number,
-    row?: number,
-    rectRow?: Rect,
-    rectCell?: Rect,
-  ) => string;
-}
-
-interface DataOptions {
-  fontSize: number;
-  fontFamily: string;
-  separation: boolean;
-}
-
-interface Data {
-  [key: string]: string | { label: string; options?: DataOptions };
-}
-
-interface Table {
-  title?: string;
-  subtitle?: string;
-  headers?: (string | Header)[];
-  datas?: Data[];
-  rows?: string[][];
-}
+import { Role } from '../users/enums';
+import { Fonts } from './enums';
+import * as moment from 'moment';
+import { Header, Table } from './interfaces';
 
 @Injectable()
 export class ReportsService {
@@ -141,14 +99,67 @@ export class ReportsService {
     headers: Header[],
     rows: any,
     title: string,
+    loggedInUserName?: string,
   ) {
     const doc = new PDFDocument({ margin: 30, size: 'A4' });
 
-    doc.fontSize(20).font('Helvetica-Bold').text(title, {
-      align: 'center',
-    });
+    const users = await this.usersService.findAll();
 
-    doc.moveDown();
+    const chiefPharmacist = users.find(
+      (value) => value.role === Role.CHIEF_PHARMACIST,
+    );
+
+    const newTitle = title.concat(
+      ` as at ${new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })}`,
+    );
+
+    doc
+      .fontSize(8)
+      .font('Courier')
+      .text(
+        new Date().toLocaleDateString(undefined, {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        {
+          align: 'right',
+        },
+      )
+      .moveDown()
+      .fontSize(20)
+      .font('Times-Bold')
+      .text('ResTechs Online Pharmaceutical Management System'.toUpperCase(), {
+        align: 'center',
+      })
+      // .moveDown()
+      .fontSize(10)
+      .font('Helvetica')
+      .text(`Mobile:  ${chiefPharmacist?.phone}`, {
+        align: 'center',
+      })
+      .fontSize(10)
+      .font('Helvetica')
+      .text(`Email:  ${chiefPharmacist?.email}`, {
+        align: 'center',
+      })
+      .moveDown(0.5)
+      .fontSize(11)
+      .font('Helvetica-Bold')
+      .text(newTitle.toUpperCase(), {
+        align: 'center',
+      })
+      // .moveTo(0, 20)
+      .lineTo(100, 150)
+      .lineWidth(100)
+      .moveDown();
 
     const table: Table = {
       headers,
@@ -175,6 +186,9 @@ export class ReportsService {
       .font('Helvetica')
       .text(`Created At ${new Date().toLocaleString()}`, {
         align: 'justify',
+      })
+      .text(`Created by ${loggedInUserName}`, {
+        align: 'right',
       });
 
     doc
@@ -194,7 +208,7 @@ export class ReportsService {
 
   // users
 
-  async allUsersReport(res: Response) {
+  async allUsersReport(res: Response, loggedInUser: User) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -209,18 +223,25 @@ export class ReportsService {
 
     const rows = await this.generateModelTableRows(users, attributes);
 
+    const title = `Users Report`;
+
     await this.buildTable(
       (chunk) => stream.write(chunk),
       () => stream.end(),
       headers,
       rows,
-      'Users Report',
+      title,
+      loggedInUser.username,
     );
   }
 
   // orders
 
-  async allOrdersReport(res: Response, category: OrderStatuses) {
+  async allOrdersReport(
+    res: Response,
+    category: OrderStatuses,
+    loggedInUser: User,
+  ) {
     let orders: any[];
     let reportName: string;
 
@@ -264,6 +285,7 @@ export class ReportsService {
       headers,
       rows,
       `${startCase(reportName)} Report`,
+      loggedInUser.username,
     );
   }
 
@@ -274,6 +296,7 @@ export class ReportsService {
     grouped: string,
     ungrouped,
     selection: SalesStatus,
+    loggedInUser: User,
   ) {
     let filename: string;
 
@@ -364,16 +387,25 @@ export class ReportsService {
       headers,
       rows,
       'Sales Report',
+      loggedInUser.username,
     );
   }
 
-  async generateSalesReceipt(res: Response, customerId: string) {
+  async generateSalesReceipt(
+    res: Response,
+    customerId: string,
+    loggedInUser: User,
+    saleDate: string,
+  ) {
     const sales = await this.salesService.findAllSalesByCustomerId(
       customerId,
       'false',
+      saleDate,
     );
 
-    const customerName: string = sales[0].customer as string;
+    const customer = await this.customersService.findOne(customerId, 'false');
+
+    const customerName: string = customer.name;
 
     const totalAmountArr = sales.map((value) => value.totalPrice);
 
@@ -383,15 +415,99 @@ export class ReportsService {
       },
     );
 
-    const doc = new PDFDocument({ margin: 30, size: 'A4' });
+    const doc = new PDFDocument({
+      margin: 30,
+      size: 'A4',
+      font: Fonts.SF_PRO_DISPLAY_MEDIUM,
+    });
+
+    const users = await this.usersService.findAll();
+
+    const chiefPharmacist = users.find(
+      (value) => value.role === Role.CHIEF_PHARMACIST,
+    );
+
+    const currentTime = moment().format('Do MMMM YYYY');
+    // const newTitle = 'Customer Sales Receipt'.concat(
+    //   ` as at ${new Date().toLocaleDateString('en-GB', {
+    //     day: '2-digit',
+    //     month: 'long',
+    //     year: 'numeric',
+    //   })}`,
+    // );
+    const newTitle = `Customer Sales Receipt as at ${currentTime}`;
 
     doc
+      .fontSize(8)
+      .font('Courier')
+      .text(
+        new Date().toLocaleDateString('en-GB', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        {
+          align: 'right',
+        },
+      )
+      .moveDown()
       .fontSize(20)
-      .font('Helvetica-Bold')
-      .text('Sales Receipt', {
+      .font('Times-Bold')
+      .text('ResTechs Online Pharmaceutical Management System'.toUpperCase(), {
         align: 'center',
       })
-      .moveDown();
+      // .moveDown()
+      .fontSize(10)
+      .font(Fonts.LATO_REGULAR)
+      .text(`Mobile:  ${chiefPharmacist?.phone}`, {
+        align: 'center',
+      })
+      .fontSize(10)
+      .font(Fonts.LATO_REGULAR)
+      .text(`Email:  ${chiefPharmacist?.email}`, {
+        align: 'center',
+      })
+      .moveDown(0.5)
+      .fontSize(11)
+      .font('Helvetica-Bold')
+      .text(newTitle.toUpperCase(), {
+        align: 'center',
+      })
+      .moveDown()
+      .lineWidth(20)
+      // .lineCap('butt')
+      .moveTo(565, 140)
+      .lineTo(30, 140)
+      .fill()
+      .fontSize(9)
+      .font(Fonts.LATO_REGULAR)
+      .text(`Id:\U+0009`.toUpperCase() + `   ${sales[0].id}`, {
+        align: 'justify',
+      })
+      .text(`Customer Id:`.toUpperCase() + `   ${customerId}`, {
+        align: 'justify',
+      })
+      .text(`Customer Name:   ${customerName}`.toUpperCase(), {
+        align: 'justify',
+      })
+      .text(
+        `Amount Received: ${this.currencyFormatter(
+          +amountReceived,
+        )}`.toUpperCase(),
+        {
+          align: 'left',
+        },
+      )
+      .moveDown()
+      .lineWidth(4)
+      // .lineCap('butt')
+      .moveTo(565, 193)
+      .lineTo(30, 193)
+      .fill()
+      .moveDown(0.3);
 
     const attributes = [
       'medicine',
@@ -434,8 +550,6 @@ export class ReportsService {
     );
 
     const table: Table = {
-      title: `Name: ${customerName}`,
-      subtitle: `Amount Received: ${this.currencyFormatter(+amountReceived)}`,
       headers,
       rows,
     };
@@ -445,13 +559,13 @@ export class ReportsService {
       'access-control-expose-headers': 'Content-Disposition',
       'Content-Disposition': `attachment;filename=${startCase(
         customerName,
-      )} sales receipt ${new Date().toISOString()}.pdf`,
+      )} sales receipt ${new Date().getTime()}.pdf`,
     });
 
     await doc.table(table, {
-      prepareHeader: () => doc.font('Helvetica-Bold').fontSize(8),
+      prepareHeader: () => doc.font(Fonts.SF_PRO_DISPLAY_MEDIUM).fontSize(8),
       prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-        doc.font('Helvetica').fontSize(8);
+        doc.font(Fonts.LATO_REGULAR).fontSize(8);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         indexColumn === 0 && doc.addBackground(rectRow, 'white', 0.15);
@@ -472,17 +586,20 @@ export class ReportsService {
 
     doc
       .moveDown()
-      .fontSize(6)
-      .font('Helvetica')
+      .fontSize(5)
+      .font(Fonts.LATO_REGULAR)
       .text(`Created At ${new Date().toLocaleString()}`, {
         align: 'justify',
+      })
+      .text(`Created by ${loggedInUser.username}`, {
+        align: 'right',
       });
 
     doc
       .moveDown()
       .moveDown()
-      .fontSize(8)
-      .font('Helvetica')
+      .fontSize(6)
+      .font(Fonts.LATO_REGULAR)
       .text(
         `©️ ${new Date().getFullYear()} ResTechs Online Pharmaceutical Management System`,
         {
@@ -495,14 +612,18 @@ export class ReportsService {
 
   // medicines
 
-  async allMedicineStockReport(res: Response) {
+  async allMedicineStockReport(
+    res: Response,
+    loggedInUser: User,
+    paranoid: string,
+  ) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
       'Content-Disposition': `attachment;filename=medicine stock report ${new Date().toISOString()}.pdf`,
     });
 
-    const medicines = await this.medicinesService.findAll();
+    const medicines = await this.medicinesService.findAll(paranoid);
 
     const attributes = [
       'name',
@@ -543,10 +664,11 @@ export class ReportsService {
       headers,
       rows,
       'Medicine Stock Report',
+      loggedInUser.username,
     );
   }
 
-  async allMedicinesReport(res: Response) {
+  async allMedicinesReport(res: Response, loggedInUser: User) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -568,10 +690,15 @@ export class ReportsService {
       headers,
       rows,
       'Medicines Report',
+      loggedInUser.username,
     );
   }
 
-  async medicinesOutOfStockReport(res: Response) {
+  async medicinesOutOfStockReport(
+    res: Response,
+    loggedInUser: User,
+    paranoid: string,
+  ) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -589,7 +716,9 @@ export class ReportsService {
       'expiryDate',
     ];
 
-    const medicines = await this.medicinesService.findAllMedicineOutOfStock();
+    const medicines = await this.medicinesService.findAllMedicineOutOfStock(
+      paranoid,
+    );
 
     const newMedicinesOutOfStockEntities = medicines.map((value) => {
       const medicineOutOfStockMap: Map<string, any> = new Map();
@@ -630,10 +759,11 @@ export class ReportsService {
       headers,
       rows,
       'Out Stock Report',
+      loggedInUser.username,
     );
   }
 
-  async expiredMedicinesReport(res: Response) {
+  async expiredMedicinesReport(res: Response, loggedInUser: User, paranoid) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -649,7 +779,9 @@ export class ReportsService {
       'expiryDate',
     ];
 
-    const medicines = await this.medicinesService.findAllExpiredMedicines();
+    const medicines = await this.medicinesService.findAllExpiredMedicines(
+      paranoid,
+    );
 
     const newExpiredMedicineEntities = medicines.map((value) => {
       const expiredMedicineMap: Map<string, any> = new Map();
@@ -685,12 +817,13 @@ export class ReportsService {
       headers,
       rows,
       'Expired Medicine Report',
+      loggedInUser.username,
     );
   }
 
   // purchases
 
-  async allPurchasesReport(res: Response) {
+  async allPurchasesReport(res: Response, loggedInUser: User) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -748,12 +881,13 @@ export class ReportsService {
       headers,
       rows,
       'Purchases Report',
+      loggedInUser.username,
     );
   }
 
   // customers
 
-  async allCustomersReport(res: Response) {
+  async allCustomersReport(res: Response, loggedInUser: User) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -774,12 +908,13 @@ export class ReportsService {
       headers,
       rows,
       'Customers Report',
+      loggedInUser.username,
     );
   }
 
   // suppliers
 
-  async allSuppliersReport(res: Response) {
+  async allSuppliersReport(res: Response, loggedInUser: User) {
     const stream = res.writeHead(200, {
       'Content-Type': 'application/pdf',
       'access-control-expose-headers': 'Content-Disposition',
@@ -800,6 +935,7 @@ export class ReportsService {
       headers,
       rows,
       'Suppliers Report',
+      loggedInUser.username,
     );
   }
 }
