@@ -13,6 +13,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ReportsModule } from './reports/reports.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ReportsModule } from './reports/reports.module';
     AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ReportsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
