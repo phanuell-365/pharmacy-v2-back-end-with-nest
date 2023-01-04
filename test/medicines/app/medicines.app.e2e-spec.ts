@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../../../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { DoseForms } from '../src/medicines/enums';
-import { AuthDto } from '../src/auth/dto';
+import { DoseForms } from '../../../src/medicines/enums';
+import { AuthDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
-import { CreateMedicineDto } from '../src/medicines/dto';
+import { CreateMedicineDto } from '../../../src/medicines/dto';
 
 describe('Pharmacy Version 2 Medicines App e2e', function () {
   let medicinesApp: INestApplication;
