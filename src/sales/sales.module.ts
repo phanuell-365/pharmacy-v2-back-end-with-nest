@@ -8,6 +8,7 @@ import { MedicinesModule } from '../medicines/medicines.module';
 import { salesProvider } from './sales.provider';
 import { medicinesProvider } from '../medicines/medicines.provider';
 import { customersProvider } from '../customers/customers.provider';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { customersProvider } from '../customers/customers.provider';
     // StockModule,
     SalesModule,
     MedicinesModule,
+    AnalyticsModule,
   ],
   controllers: [SalesController],
   providers: [

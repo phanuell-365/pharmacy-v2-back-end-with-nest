@@ -7,11 +7,13 @@ import { MedicinesModule } from '../medicines/medicines.module';
 // import { StockModule } from '../stock/stock.module';
 import { suppliersProvider } from '../suppliers/suppliers.provider';
 import { medicinesProvider } from '../medicines/medicines.provider';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
     SuppliersModule,
     MedicinesModule,
+    AnalyticsModule,
     // StockModule
   ],
   controllers: [OrdersController],
