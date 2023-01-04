@@ -4,6 +4,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as pactum from 'pactum';
 import { AuthDto } from '../../../src/auth/dto';
 import { CreateCustomerDto } from '../../../src/customers/dto';
+import * as moment from 'moment';
 
 describe('Analytics for Medicines e2e Tests', function () {
   let analyticsApp: INestApplication;
@@ -96,6 +97,24 @@ describe('Analytics for Medicines e2e Tests', function () {
         return pactum
           .spec()
           .get('/customers/analytics/today')
+          .withHeaders({
+            Authorization: 'Bearer $S{accessToken}',
+          })
+          .expectStatus(200)
+          .expectJsonLike({ total: 1 })
+          .inspect();
+      });
+    });
+
+    describe('Get all customers aboard between today and a certain range', function () {
+      it('should return the number of customers aboard within the given range', function () {
+        return pactum
+          .spec()
+          .get(
+            `/customers/analytics/range?s=${moment()
+              .subtract(1, 'day')
+              .utc()}&e=${moment().utc()}`,
+          )
           .withHeaders({
             Authorization: 'Bearer $S{accessToken}',
           })

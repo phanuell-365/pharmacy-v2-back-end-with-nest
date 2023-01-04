@@ -19,7 +19,7 @@ export class AnalyticsService {
       where: {
         createdAt: {
           [Op.gt]: start,
-          [Op.lt]: end,
+          [Op.lte]: end,
         },
       },
       raw: true,
@@ -37,6 +37,17 @@ export class AnalyticsService {
 
     const analyticsObj: CustomerAnalytics = {
       date: now.toDate(),
+      total: count,
+    };
+
+    return analyticsObj;
+  }
+
+  async customersWithinRange(start: Date, end: Date) {
+    const { count } = await this.dailyCustomers(start, end);
+
+    const analyticsObj: CustomerAnalytics = {
+      date: end,
       total: count,
     };
 
