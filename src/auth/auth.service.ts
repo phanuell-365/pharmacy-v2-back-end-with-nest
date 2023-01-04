@@ -60,6 +60,8 @@ export class AuthService {
       },
     });
 
+    console.error('user -> ', userFound);
+
     // if no user is found
     // check if there is an admin
     if (!userFound) {
@@ -75,7 +77,12 @@ export class AuthService {
       }
     }
 
-    // console.error('the user -> ', user);
+    userFound = await this.usersRepository.unscoped().findOne({
+      where: {
+        username: user.username,
+      },
+    });
+
     if (user.username !== userFound?.username) {
       throw new ForbiddenException('Invalid username or password!');
     }
