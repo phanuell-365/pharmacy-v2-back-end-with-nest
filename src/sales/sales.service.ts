@@ -503,6 +503,7 @@ export class SalesService {
     const today = moment();
     const startOfMonth = moment().startOf('month');
     const dayAfterStartOfMonth = moment().startOf('month').add(1, 'day');
+    console.error(today);
 
     // type DateQuantityTotal = [Date, number, number];
 

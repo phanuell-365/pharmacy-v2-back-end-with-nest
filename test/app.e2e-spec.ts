@@ -20,7 +20,9 @@ describe('Pharmacy Version 2 App e2e', function () {
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
     await app.init();
+
     await app.listen(process.env.TEST_PORT);
+
     pactum.request.setBaseUrl(`http://localhost:${process.env.TEST_PORT}`);
   });
 
@@ -30,8 +32,8 @@ describe('Pharmacy Version 2 App e2e', function () {
 
   describe('Auth', function () {
     const authDto: AuthDto = {
-      username: 'Administrator',
-      password: 'password_admin',
+      username: 'Admin',
+      password: 'admin',
     };
 
     describe('Login', function () {

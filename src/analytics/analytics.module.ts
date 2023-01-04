@@ -19,6 +19,12 @@ import { CustomersModule } from '../customers/customers.module';
 import { medicinesProvider } from '../medicines/medicines.provider';
 import { SuppliersModule } from '../suppliers/suppliers.module';
 import { MedicinesService } from '../medicines/medicines.service';
+import { MedicinesModule } from './medicines/medicines.module';
+import { SalesModule } from './sales/sales.module';
+import { OrdersModule } from './orders/orders.module';
+import { CustomersModule } from './customers/customers.module';
+import { PurchasesModule } from './purchases/purchases.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
 
 @Module({
   controllers: [AnalyticsController],

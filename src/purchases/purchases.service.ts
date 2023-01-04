@@ -874,15 +874,6 @@ export class PurchasesService {
     const today = moment();
     const startOfMonth = moment().startOf('month');
     const dayAfterStartOfMonth = moment().startOf('month').add(1, 'day');
-    const someDay = moment('2022-10', 'YYYY-MM');
-
-    console.warn(someDay.toDate());
-    console.warn('End of the month', someDay.endOf('month'));
-    console.warn(moment().month('January').startOf('month').toDate());
-    console.warn(
-      'End of that month _/> ',
-      moment().month('January').startOf('month').endOf('month'),
-    );
 
     const dateQuantityTotalArr: DateQuantityTotalDto[] = [];
 
