@@ -4,7 +4,7 @@ import { CUSTOMERS_REPOSITORY } from '../constants';
 import { Customer } from '../entities';
 import { Op } from 'sequelize';
 import * as moment from 'moment';
-import { CustomerAnalytics } from './interface';
+import { CustomerAnalytics, DailyCustomerAnalytics } from './interface';
 
 @Injectable()
 export class AnalyticsService {
@@ -52,5 +52,30 @@ export class AnalyticsService {
     };
 
     return analyticsObj;
+  }
+
+  async thisWeeklyCustomers() {
+    const weekStart = moment().startOf('week');
+    const now = moment();
+    const someDay = moment().startOf('week').add(1, 'day');
+
+    const weeklyCustomers: DailyCustomerAnalytics[] = [];
+
+    while (weekStart.isSameOrBefore(now)) {
+      const start = weekStart.toDate();
+      const end = someDay.toDate();
+
+      const { count } = await this.dailyCustomers(start, end);
+
+      weeklyCustomers.push({
+        day: moment(start).format('dddd'),
+        total: count,
+      });
+
+      weekStart.add(1, 'day');
+      someDay.add(1, 'day');
+    }
+
+    return weeklyCustomers;
   }
 }

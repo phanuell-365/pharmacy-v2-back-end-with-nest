@@ -18,4 +18,9 @@ export class AnalyticsController {
   customersWithinRange(@Query() queries: DateQueryDto) {
     return this.analyticsService.customersWithinRange(queries.s, queries.e);
   }
+
+  @Get('week')
+  thisWeeklyCustomers() {
+    return this.analyticsService.thisWeeklyCustomers();
+  }
 }

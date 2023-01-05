@@ -55,8 +55,7 @@ describe('Analytics for Medicines e2e Tests', function () {
           .withHeaders({
             Authorization: 'Bearer $S{accessToken}',
           })
-          .expectStatus(200)
-          .inspect();
+          .expectStatus(200);
       });
     });
 
@@ -75,8 +74,7 @@ describe('Analytics for Medicines e2e Tests', function () {
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
             .withBody({ ...customerDto })
             .expectStatus(201)
-            .stores('customerId', 'id')
-            .inspect();
+            .stores('customerId', 'id');
         });
       });
 
@@ -86,8 +84,7 @@ describe('Analytics for Medicines e2e Tests', function () {
             .spec()
             .get('/customers')
             .withHeaders({ Authorization: 'Bearer $S{accessToken}' })
-            .expectStatus(200)
-            .inspect();
+            .expectStatus(200);
         });
       });
     });
@@ -120,6 +117,21 @@ describe('Analytics for Medicines e2e Tests', function () {
           })
           .expectStatus(200)
           .expectJsonLike({ total: 1 })
+          .inspect();
+      });
+    });
+  });
+
+  describe('Weekly Customers', function () {
+    describe('Get all the customers aboard this week till today.', function () {
+      it('should return the number of customers aboard today.', function () {
+        return pactum
+          .spec()
+          .get('/customers/analytics/week')
+          .withHeaders({
+            Authorization: 'Bearer $S{accessToken}',
+          })
+          .expectStatus(200)
           .inspect();
       });
     });
