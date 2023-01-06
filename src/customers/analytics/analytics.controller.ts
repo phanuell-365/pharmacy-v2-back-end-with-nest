@@ -3,6 +3,7 @@ import { AnalyticsService } from './analytics.service';
 import { JwtGuard } from '../../auth/guards';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { DateQueryDto } from './dto/date-query.dto';
+import { IntervalQueryDto } from './dto/interval-query.dto';
 
 @UseGuards(JwtGuard, RolesGuard)
 @Controller('/customers/analytics')
@@ -20,7 +21,12 @@ export class AnalyticsController {
   }
 
   @Get('week')
-  thisWeeklyCustomers() {
-    return this.analyticsService.thisWeeklyCustomers();
+  thisWeeklyCustomers(@Query() week: IntervalQueryDto) {
+    switch (week.interval) {
+      case 'weekly':
+        return this.analyticsService.weeklyCustomers();
+      case 'this':
+        return this.analyticsService.thisWeeklyCustomers();
+    }
   }
 }

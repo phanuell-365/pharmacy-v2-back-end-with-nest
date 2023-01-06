@@ -78,4 +78,29 @@ export class AnalyticsService {
 
     return weeklyCustomers;
   }
+
+  async weeklyCustomers() {
+    const weekStart = moment().startOf('week');
+    const someDay = moment().startOf('week').add(1, 'day');
+    const weekEnd = moment().endOf('week');
+
+    const weeklyCustomers: DailyCustomerAnalytics[] = [];
+
+    while (weekStart.isSameOrBefore(weekEnd)) {
+      const start = weekStart.toDate();
+      const end = someDay.toDate();
+
+      const { count } = await this.dailyCustomers(start, end);
+
+      weeklyCustomers.push({
+        day: moment(start).format('dddd'),
+        total: count,
+      });
+
+      weekStart.add(1, 'day');
+      someDay.add(1, 'day');
+    }
+
+    return weeklyCustomers;
+  }
 }

@@ -98,8 +98,7 @@ describe('Analytics for Medicines e2e Tests', function () {
             Authorization: 'Bearer $S{accessToken}',
           })
           .expectStatus(200)
-          .expectJsonLike({ total: 1 })
-          .inspect();
+          .expectJsonLike({ total: 1 });
       });
     });
 
@@ -127,13 +126,26 @@ describe('Analytics for Medicines e2e Tests', function () {
       it('should return the number of customers aboard today.', function () {
         return pactum
           .spec()
-          .get('/customers/analytics/week')
+          .get('/customers/analytics/week?interval=this')
           .withHeaders({
             Authorization: 'Bearer $S{accessToken}',
           })
           .expectStatus(200)
           .inspect();
       });
+    });
+  });
+
+  describe('Get all the customers aboard this week', function () {
+    it('should return the number of customers aboard this week', function () {
+      return pactum
+        .spec()
+        .get('/customers/analytics/week?interval=weekly')
+        .withHeaders({
+          Authorization: 'Bearer $S{accessToken}',
+        })
+        .expectStatus(200)
+        .inspect();
     });
   });
 });
